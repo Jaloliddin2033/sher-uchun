@@ -1,1047 +1,564 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Inson — Jaloliddin Komolov</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-main: #1c1410;
-      --accent-primary: #c17817;
-      --accent-secondary: #8b2500;
-      --text-main: #f4e8d0;
-      --text-date: #ff8c42;
-      --text-muted: #9a8878;
-      --overlay: rgba(28, 20, 16, 0.97);
-      --card-bg: rgba(255, 255, 255, 0.02);
-      --card-border: rgba(193, 120, 23, 0.18);
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Inson — Jaloliddin Komolovning she'rlar to'plami (2023–2025).">
+<style>
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Inson</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a book. Cover + mundarija (contents) on one page, each poem on its own page (#sher-N). Single narrow reading column. */
+  :root {
+    --paper: #eceee8;
+    --paper-2: #e2e5de;
+    --ink: #1d2740;
+    --ink-soft: #4d5670;
+    --muted: #7f8697;
+    --rule: #c9cdc4;
+    --lapis: #1b6a78;
+    --lapis-wash: rgba(27,106,120,.10);
+    --f-display: "Marcellus", "Times New Roman", serif;
+    --f-body: "Spectral", Georgia, "Times New Roman", serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121620; --paper-2: #1a1f2b; --ink: #dfe4ea; --ink-soft: #aab2c0;
+      --muted: #737c8d; --rule: #2b3241; --lapis: #62b8c4; --lapis-wash: rgba(98,184,196,.12);
+      color-scheme: dark;
     }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121620; --paper-2: #1a1f2b; --ink: #dfe4ea; --ink-soft: #aab2c0;
+    --muted: #737c8d; --rule: #2b3241; --lapis: #62b8c4; --lapis-wash: rgba(98,184,196,.12);
+    color-scheme: dark;
+  }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
+  body { overflow-x: clip; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--f-body); font-size: 18px; line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 10; background: var(--paper);
+  }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--lapis); outline-offset: 3px; border-radius: 2px; }
 
-    html { scroll-behavior: smooth; overflow-x: hidden; }
+  .wrap { max-width: 38rem; margin: 0 auto; }
+  .view { animation: in .45s ease both; }
+  @keyframes in { from { opacity: .0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .view { animation: none; } html { scroll-behavior: auto; } }
 
-    body {
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-family: 'Crimson Text', serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      cursor: none;
-    }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: .72rem; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted);
+  }
 
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      box-shadow: inset 0 0 220px rgba(0,0,0,0.6);
-      z-index: 1;
-    }
+  /* ── COVER ── */
+  .cover { padding-block: 4.5rem 3rem; display: grid; gap: 1.4rem; justify-items: start; position: relative; isolation: isolate; }
+  .cover > :not(.wind) { position: relative; z-index: 1; }
+  .wind {
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw; margin-left: -50vw;
+    z-index: 0; pointer-events: none; display: block;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
+  }
+  .star { width: 44px; height: 44px; color: var(--lapis); }
+  .cover h1 {
+    font-family: var(--f-display); font-weight: 400;
+    font-size: clamp(4.2rem, 19vw, 7.5rem); line-height: .9; letter-spacing: .02em;
+    margin: 0; text-wrap: balance;
+  }
+  .cover .author { font-family: var(--f-display); font-size: 1.25rem; letter-spacing: .12em; text-transform: uppercase; margin: 0; }
+  .cover .meta { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; }
+  .epigraph {
+    margin: .8rem 0 0; padding-left: 1rem; border-left: 2px solid var(--lapis);
+    font-style: italic; font-weight: 300; color: var(--ink-soft); line-height: 1.7;
+  }
+  .epigraph cite { display: block; margin-top: .3rem; font-style: normal; font-family: var(--f-mono); font-size: .7rem; letter-spacing: .1em; color: var(--muted); }
+  .cover-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: .6rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--f-mono); font-size: .78rem; letter-spacing: .06em;
+    padding: .7rem 1.1rem; border: 1px solid var(--ink); background: transparent;
+    text-decoration: none; cursor: pointer; border-radius: 2px;
+    transition: background .2s, color .2s;
+  }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--lapis); border-color: var(--lapis); }
 
-    ::selection { background: var(--accent-primary); color: var(--bg-main); }
+  /* ── CONTENTS ── */
+  .contents { padding-block: 1rem 3rem; border-top: 1px solid var(--rule); }
+  .contents-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding-top: 2rem; }
+  .contents-head h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.7rem; margin: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1.2rem 0 .6rem; }
+  .chip {
+    font-family: var(--f-mono); font-size: .72rem; letter-spacing: .04em;
+    padding: .38rem .75rem; border: 1px solid var(--rule); background: transparent;
+    border-radius: 999px; cursor: pointer; color: var(--ink-soft);
+    transition: border-color .2s, background .2s, color .2s;
+  }
+  .chip:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .chip .n { opacity: .6; margin-left: .25rem; }
 
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-main); }
-    ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 3px; }
+  .year { margin-top: 2rem; }
+  .year h3 {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--f-display); font-weight: 400; font-size: 1.15rem; margin: 0 0 .4rem;
+    padding-bottom: .4rem; border-bottom: 1px solid var(--rule);
+  }
+  .year h3 span { font-family: var(--f-mono); font-size: .7rem; color: var(--muted); letter-spacing: .08em; }
+  .rows { list-style: none; margin: 0; padding: 0; }
+  .row {
+    display: flex; align-items: baseline; gap: .7rem;
+    padding: .62rem 0; text-decoration: none; position: relative;
+  }
+  .row .no {
+    font-family: var(--f-mono); font-size: .75rem; color: var(--muted);
+    min-width: 1.6rem; font-variant-numeric: tabular-nums; position: relative;
+  }
+  .row.read .no::after {
+    content: ""; position: absolute; left: -.75rem; top: .45em;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--lapis);
+  }
+  .row .first { min-width: 0; font-size: 1.05rem; transition: color .2s; }
+  .row .lead { flex: 1 1 1.5rem; min-width: 1rem; border-bottom: 1px dotted var(--rule); transform: translateY(-.3em); }
+  .row .date { font-family: var(--f-mono); font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .row .saved { color: var(--lapis); font-size: .8rem; }
+  .row:hover .first { color: var(--lapis); }
+  .empty { color: var(--muted); font-style: italic; padding: 2rem 0; }
 
-    @media (hover: none) and (pointer: coarse) {
-      body { cursor: auto; }
-      #custom-cursor { display: none !important; }
-    }
+  .about { border-top: 1px solid var(--rule); padding-block: 2rem 4rem; color: var(--ink-soft); font-size: 1rem; }
+  .about h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.2rem; color: var(--ink); margin: 0 0 .6rem; }
+  .about p { margin: 0 0 .7rem; max-width: 34rem; }
 
-    /* ── NOISE TEXTURE ── */
-    .noise {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      opacity: 0.06; mix-blend-mode: overlay;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
+  /* ── POEM PAGE ── */
+  .bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--paper);
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    padding-block: .9rem; border-bottom: 1px solid var(--rule);
+  }
+  .bar a { font-family: var(--f-mono); font-size: .78rem; letter-spacing: .06em; text-decoration: none; color: var(--ink-soft); }
+  .bar a:hover { color: var(--lapis); }
+  .bar .pos { font-family: var(--f-mono); font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-    /* ── AMBIENT GRADIENTS ── */
-    .ambient {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-    }
-    .ambient-1 {
-      position: absolute; top: 8%; left: 3%;
-      width: 55vw; height: 55vw;
-      background: radial-gradient(circle, rgba(193,120,23,0.13), transparent 70%);
-      filter: blur(100px);
-      animation: float 22s ease-in-out infinite;
-    }
-    .ambient-2 {
-      position: absolute; bottom: 8%; right: 3%;
-      width: 45vw; height: 45vw;
-      background: radial-gradient(circle, rgba(139,37,0,0.10), transparent 70%);
-      filter: blur(100px);
-      animation: float 28s ease-in-out infinite reverse;
-    }
-    .ambient-3 {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 30vw; height: 30vw;
-      background: radial-gradient(circle, rgba(193,120,23,0.05), transparent 70%);
-      filter: blur(80px);
-      animation: float 18s ease-in-out infinite 4s;
-    }
-    @keyframes float {
-      0%,100% { transform: translate(0,0) scale(1); }
-      33% { transform: translate(3%,2%) scale(1.05); }
-      66% { transform: translate(-2%,3%) scale(0.97); }
-    }
+  .poem { padding-block: 3rem 2rem; }
+  .poem-head { display: grid; gap: .5rem; margin-bottom: 2.4rem; }
+  .poem-head .big {
+    font-family: var(--f-display); font-size: clamp(3.4rem, 14vw, 5rem); line-height: 1;
+    color: var(--lapis); font-variant-numeric: tabular-nums;
+  }
+  .poem-head .asterism { font-family: var(--f-display); letter-spacing: .6em; color: var(--muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .3rem; }
+  .tag {
+    font-family: var(--f-mono); font-size: .68rem; letter-spacing: .04em;
+    padding: .25rem .6rem; border-radius: 999px; background: var(--lapis-wash); color: var(--lapis);
+    border: none; cursor: pointer;
+  }
+  .tag:hover { text-decoration: underline; }
 
-    /* ── CUSTOM CURSOR ── */
-    #custom-cursor {
-      position: fixed; top: 0; left: 0;
-      width: 12px; height: 12px;
-      background: var(--accent-primary);
-      border-radius: 50%;
-      pointer-events: none; z-index: 9999;
-      transform: translate(-50%,-50%);
-      transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
-      mix-blend-mode: screen;
-    }
-    #custom-cursor.expanded {
-      width: 40px; height: 40px;
-      background: transparent;
-      border: 1px solid var(--accent-primary);
-    }
+  .text { font-size: clamp(1.12rem, 3.6vw, 1.32rem); line-height: 1.85; font-weight: 400; }
+  .stanza { margin: 0 0 1.6em; }
+  .line { display: block; padding-left: 1.4em; text-indent: -1.4em; }
 
-    /* ── HEADER ── */
-    header {
-      position: fixed; top: 0; left: 0; right: 0;
-      z-index: 80;
-      padding: 2.5rem 3rem;
-      display: flex; align-items: flex-start; justify-content: space-between;
-      pointer-events: none;
-    }
-    .header-brand { pointer-events: none; }
-    .header-author {
-      font-family: 'Cinzel', serif;
-      font-size: 1rem;
-      font-weight: 400;
-      letter-spacing: 0.3em;
-      color: var(--text-main);
-      text-transform: uppercase;
-    }
-    .header-collection {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      letter-spacing: 0.15em;
-      margin-top: 0.3rem;
-    }
-    .header-stats {
-      pointer-events: auto;
-      display: flex; align-items: center; gap: 0.5rem;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      letter-spacing: 0.1em;
-      padding-top: 0.2rem;
-    }
-    .header-stats .read-icon { color: var(--accent-primary); font-size: 0.9rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 2.4rem; padding-top: 1.6rem; border-top: 1px solid var(--rule); }
+  .actions .btn[aria-pressed="true"] { background: var(--lapis); border-color: var(--lapis); color: var(--paper); }
+  .note { font-family: var(--f-mono); font-size: .72rem; color: var(--lapis); min-height: 1.2em; margin-top: .6rem; }
 
-    /* ── MAIN GRID ── */
-    main {
-      position: relative; z-index: 2;
-      max-width: 1400px; margin: 0 auto;
-      padding: 12rem 3rem 10rem;
-    }
-    #poems-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 2rem;
-    }
+  .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding-block: 2rem 4rem; }
+  .pager a {
+    display: grid; gap: .3rem; text-decoration: none; padding: 1rem;
+    border: 1px solid var(--rule); border-radius: 2px; min-width: 0;
+    transition: border-color .2s, background .2s;
+  }
+  .pager a:hover { border-color: var(--lapis); background: var(--lapis-wash); }
+  .pager a.next { text-align: right; }
+  .pager .t { font-style: italic; font-size: .98rem; overflow-wrap: anywhere; }
+  .pager .ghost { visibility: hidden; }
+  .hint { text-align: center; font-family: var(--f-mono); font-size: .68rem; color: var(--muted); padding-bottom: 2rem; }
 
-    /* ── POEM CARD ── */
-    .poem-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 2rem;
-      position: relative;
-      cursor: none;
-      transition: transform 0.6s cubic-bezier(0.4,0,0.2,1),
-                  box-shadow 0.6s cubic-bezier(0.4,0,0.2,1),
-                  border-color 0.6s ease,
-                  background 0.6s ease;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(30px);
-      will-change: transform, box-shadow;
-    }
-    .poem-card.visible {
-      animation: card-in 0.8s cubic-bezier(0.4,0,0.2,1) forwards;
-    }
-    @keyframes card-in {
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .poem-card::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
-      opacity: 0.025; pointer-events: none;
-    }
-    /* corner ornaments */
-    .poem-card::after {
-      content: '';
-      position: absolute; inset: 6px;
-      border: 1px solid transparent;
-      transition: border-color 0.5s ease;
-      pointer-events: none;
-    }
-    .poem-card:hover {
-      transform: scale(1.02) translateY(-6px);
-      box-shadow: 0 24px 60px rgba(193,120,23,0.18), 0 4px 20px rgba(0,0,0,0.6);
-      border-color: rgba(193,120,23,0.5);
-      background: rgba(255,255,255,0.035);
-    }
-    .poem-card:hover::after {
-      border-color: rgba(193,120,23,0.12);
-    }
-
-    /* date block */
-    .date-block {
-      display: inline-flex; flex-direction: column; align-items: center;
-      border: 1px solid rgba(193,120,23,0.35);
-      padding: 0.5rem 0.8rem;
-      margin-bottom: 1.4rem;
-      position: relative;
-      transition: box-shadow 0.5s ease;
-      background: rgba(28,20,16,0.5);
-    }
-    .poem-card:hover .date-block {
-      animation: date-glow 2s ease-in-out infinite;
-    }
-    @keyframes date-glow {
-      0%,100% { box-shadow: 0 0 0 rgba(193,120,23,0); }
-      50% { box-shadow: 0 0 18px rgba(193,120,23,0.45); }
-    }
-    .date-day {
-      font-family: 'Cinzel', serif;
-      font-size: 2rem; font-weight: 600;
-      color: var(--text-date);
-      line-height: 1;
-    }
-    .date-month {
-      font-family: 'Cinzel', serif;
-      font-size: 0.65rem; font-weight: 400;
-      letter-spacing: 0.2em;
-      color: var(--accent-primary);
-      margin-top: 0.2rem;
-    }
-    .date-year {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 0.15rem;
-      letter-spacing: 0.1em;
-    }
-
-    /* card ornament */
-    .card-ornament {
-      position: absolute; top: 1.4rem; right: 1.6rem;
-      color: rgba(193,120,23,0.2);
-      font-size: 1rem;
-      transition: color 0.4s ease, transform 0.4s ease;
-    }
-    .poem-card:hover .card-ornament {
-      color: rgba(193,120,23,0.55);
-      transform: rotate(15deg);
-    }
-
-    .card-title {
-      font-family: 'Crimson Text', serif;
-      font-size: 1.4rem; font-weight: 600;
-      color: var(--text-main);
-      line-height: 1.4;
-      margin-bottom: 0.8rem;
-    }
-
-    .card-divider {
-      width: 100%; height: 1px;
-      background: linear-gradient(to right, var(--accent-primary), transparent);
-      opacity: 0.3;
-      margin-bottom: 0.9rem;
-    }
-
-    .card-preview {
-      font-family: 'Crimson Text', serif;
-      font-style: italic;
-      font-size: 0.95rem;
-      color: rgba(244,232,208,0.55);
-      line-height: 1.75;
-      -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-      max-height: 5rem;
-      overflow: hidden;
-    }
-
-    .card-read-btn {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-family: 'Cinzel', serif;
-      font-size: 0.65rem; letter-spacing: 0.25em;
-      color: var(--accent-primary);
-      text-transform: uppercase;
-      margin-top: 1.2rem;
-      opacity: 0;
-      transform: translateX(-8px);
-      transition: opacity 0.4s ease, transform 0.4s ease;
-      cursor: none;
-    }
-    .poem-card:hover .card-read-btn {
-      opacity: 1; transform: translateX(0);
-    }
-    .card-read-btn::before {
-      content: '⟶';
-      font-size: 0.9rem;
-    }
-
-    /* ── EMPTY STATE ── */
-    #empty-state {
-      display: none; flex-direction: column; align-items: center;
-      justify-content: center; padding: 8rem 2rem; text-align: center;
-    }
-    #empty-state.visible { display: flex; }
-    #empty-state .empty-symbol {
-      font-family: 'Cinzel', serif; font-size: 4rem;
-      color: rgba(193,120,23,0.3); margin-bottom: 1.5rem;
-    }
-    #empty-state p {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic; font-size: 1.2rem;
-      color: var(--text-muted);
-    }
-
-    /* ── DOCK NAV ── */
-    #dock {
-      position: fixed; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
-      z-index: 100;
-      display: flex; align-items: center; gap: 0;
-      background: rgba(193,120,23,0.07);
-      backdrop-filter: blur(30px);
-      border: 1px solid rgba(193,120,23,0.25);
-      border-radius: 60px;
-      padding: 0;
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    }
-    .dock-btn {
-      display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.85rem 1.4rem;
-      font-family: 'Cinzel', serif;
-      font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(244,232,208,0.6);
-      background: transparent; border: none; cursor: none;
-      transition: color 0.3s ease, background 0.3s ease;
-      white-space: nowrap;
-    }
-    .dock-btn:hover { color: var(--text-date); background: rgba(193,120,23,0.1); }
-    .dock-btn.active { color: var(--text-date); }
-    .dock-sep { width: 1px; height: 20px; background: rgba(193,120,23,0.2); flex-shrink: 0; }
-    .dock-icon { font-size: 0.8rem; }
-
-    #year-filter-wrapper { position: relative; display: flex; align-items: center; }
-    #yearFilter {
-      appearance: none; background: transparent; border: none;
-      font-family: 'Cinzel', serif; font-size: 0.6rem;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(244,232,208,0.6); cursor: none;
-      padding: 0.85rem 1.8rem 0.85rem 1.4rem;
-      transition: color 0.3s ease;
-      outline: none;
-    }
-    #yearFilter:hover { color: var(--text-date); }
-    #yearFilter option { background: #2a1f17; color: var(--text-main); }
-    .year-arrow {
-      position: absolute; right: 0.7rem;
-      font-size: 0.5rem; color: rgba(193,120,23,0.5);
-      pointer-events: none;
-    }
-
-    /* ── SEARCH OVERLAY ── */
-    #search-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(28,20,16,0.98);
-      backdrop-filter: blur(20px);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-start;
-      padding: 4rem 2rem 2rem;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.5s ease;
-    }
-    #search-overlay.open { opacity: 1; pointer-events: all; }
-
-    #search-close {
-      position: absolute; top: 2rem; right: 2.5rem;
-      font-family: 'Cinzel', serif; font-size: 0.65rem;
-      letter-spacing: 0.3em; color: var(--text-muted);
-      background: none; border: none; cursor: none;
-      transition: color 0.3s ease;
-      text-transform: uppercase;
-    }
-    #search-close:hover { color: var(--text-date); }
-
-    .search-box {
-      width: 100%; max-width: 800px;
-      border: 1px solid rgba(193,120,23,0.3);
-      padding: 1.2rem 1.8rem;
-      display: flex; align-items: center; gap: 1rem;
-      margin-top: 2rem; margin-bottom: 1.5rem;
-    }
-    .search-box input {
-      flex: 1; background: transparent; border: none;
-      font-family: 'Crimson Text', serif; font-size: 1.5rem;
-      color: var(--text-main); outline: none;
-      letter-spacing: 0.05em;
-    }
-    .search-box input::placeholder { color: var(--text-muted); }
-    .search-box .search-icon { color: var(--accent-primary); font-size: 1.1rem; }
-
-    #search-count {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-size: 0.9rem; color: var(--text-muted);
-      margin-bottom: 2rem; letter-spacing: 0.1em;
-      width: 100%; max-width: 800px;
-    }
-
-    #search-results {
-      width: 100%; max-width: 800px;
-      overflow-y: auto; flex: 1;
-      display: flex; flex-direction: column; gap: 0.8rem;
-    }
-    .search-result-item {
-      display: flex; gap: 1.2rem; align-items: flex-start;
-      padding: 1.2rem;
-      border: 1px solid rgba(193,120,23,0.12);
-      background: rgba(255,255,255,0.015);
-      cursor: none;
-      transition: border-color 0.3s ease, background 0.3s ease;
-    }
-    .search-result-item:hover {
-      border-color: rgba(193,120,23,0.4);
-      background: rgba(255,255,255,0.03);
-    }
-    .search-result-date { flex-shrink: 0; }
-    .search-result-date .mini-day {
-      font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 600;
-      color: var(--text-date); line-height: 1;
-    }
-    .search-result-date .mini-mon {
-      font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.15em;
-      color: var(--accent-primary); text-transform: uppercase;
-    }
-    .search-result-date .mini-yr {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.7rem; color: var(--text-muted);
-    }
-    .search-result-content { flex: 1; min-width: 0; }
-    .search-result-title {
-      font-family: 'Crimson Text', serif; font-size: 1rem; font-weight: 600;
-      color: var(--text-main); margin-bottom: 0.3rem;
-    }
-    .search-result-snippet {
-      font-family: 'Crimson Text', serif; font-style: italic;
-      font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;
-    }
-    .search-highlight { color: var(--text-date); font-style: normal; background: rgba(193,120,23,0.15); }
-
-    /* ── READ MODAL ── */
-    #read-modal {
-      position: fixed; inset: 0; z-index: 150;
-      background: var(--bg-main);
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.7s ease;
-      overflow-y: auto; overflow-x: hidden;
-    }
-    #read-modal.open { opacity: 1; pointer-events: all; }
-
-    .modal-header {
-      position: sticky; top: 0; z-index: 160;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 2rem 3rem;
-      background: linear-gradient(to bottom, var(--bg-main) 70%, transparent);
-    }
-    #modal-back {
-      font-family: 'Cinzel', serif; font-size: 0.6rem;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--text-muted); background: none; border: none;
-      cursor: none; transition: color 0.3s ease;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    #modal-back::before { content: '←'; }
-    #modal-back:hover { color: var(--text-date); }
-
-    #modal-nav { display: flex; gap: 1rem; }
-    .modal-nav-btn {
-      font-family: 'Cinzel', serif; font-size: 0.6rem;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--text-muted); background: rgba(193,120,23,0.08);
-      border: 1px solid rgba(193,120,23,0.2);
-      padding: 0.5rem 1rem; cursor: none;
-      transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
-    }
-    .modal-nav-btn:hover {
-      color: var(--text-date);
-      border-color: rgba(193,120,23,0.5);
-      background: rgba(193,120,23,0.15);
-    }
-
-    .modal-body {
-      max-width: 65ch; margin: 0 auto;
-      padding: 3rem 2rem 8rem;
-      display: flex; flex-direction: column; align-items: center;
-    }
-
-    #modal-date-display {
-      display: flex; flex-direction: column; align-items: center;
-      border: 1px solid rgba(193,120,23,0.35);
-      padding: 1rem 1.8rem; margin-bottom: 3rem;
-      opacity: 0; transform: translateY(-20px);
-      transition: opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s;
-    }
-    #modal-date-display.revealed { opacity: 1; transform: none; }
-    .modal-date-day {
-      font-family: 'Cinzel', serif; font-size: 3.5rem; font-weight: 600;
-      color: var(--text-date); line-height: 1;
-    }
-    .modal-date-month {
-      font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 400;
-      letter-spacing: 0.3em; color: var(--accent-primary);
-      text-transform: uppercase; margin-top: 0.3rem;
-    }
-    .modal-date-year {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;
-      letter-spacing: 0.15em;
-    }
-
-    #modal-title {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(1.8rem, 4vw, 3.5rem); font-weight: 400;
-      text-align: center; line-height: 1.25;
-      color: var(--text-main); margin-bottom: 2rem;
-      opacity: 0; transform: translateY(20px);
-      transition: opacity 0.8s ease 0.4s, transform 0.8s ease 0.4s;
-    }
-    #modal-title.revealed { opacity: 1; transform: none; }
-
-    .modal-ornament {
-      width: 100%; display: flex; align-items: center; gap: 1rem;
-      margin-bottom: 3rem;
-      opacity: 0;
-      transition: opacity 0.8s ease 0.6s;
-    }
-    .modal-ornament.revealed { opacity: 1; }
-    .ornament-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--accent-primary), transparent); opacity: 0.4; }
-    .ornament-glyph { color: var(--accent-primary); font-size: 0.7rem; flex-shrink: 0; }
-
-    #modal-text {
-      font-family: 'Crimson Text', serif;
-      font-size: clamp(1.1rem, 2vw, 1.45rem);
-      line-height: 2.4;
-      color: rgba(244,232,208,0.85);
-      text-align: center;
-      width: 100%;
-      opacity: 0; transform: translateY(20px);
-      transition: opacity 0.8s ease 0.7s, transform 0.8s ease 0.7s;
-    }
-    #modal-text.revealed { opacity: 1; transform: none; }
-    #modal-text .stanza { margin-bottom: 2.5rem; }
-    #modal-text .stanza:first-child .line:first-child::first-letter {
-      font-family: 'Cinzel', serif;
-      font-size: 3.2em; font-weight: 600;
-      float: left; line-height: 0.8;
-      margin-right: 0.1em; margin-top: 0.15em;
-      color: var(--accent-primary);
-    }
-    #modal-text .line { display: block; }
-
-    .modal-actions {
-      display: flex; align-items: center; gap: 1.5rem;
-      margin-top: 4rem;
-      opacity: 0;
-      transition: opacity 0.8s ease 1s;
-    }
-    .modal-actions.revealed { opacity: 1; }
-    .modal-action-btn {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-family: 'Cinzel', serif; font-size: 0.6rem;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--text-muted);
-      background: rgba(193,120,23,0.06);
-      border: 1px solid rgba(193,120,23,0.2);
-      padding: 0.7rem 1.2rem; cursor: none;
-      transition: color 0.3s ease, border-color 0.3s ease;
-    }
-    .modal-action-btn:hover { color: var(--text-date); border-color: rgba(193,120,23,0.5); }
-    .modal-action-btn.saved { color: var(--text-date); border-color: rgba(193,120,23,0.5); }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      header { padding: 1.5rem; }
-      main { padding: 8rem 1rem 8rem; }
-      #poems-grid { grid-template-columns: 1fr; gap: 1.2rem; }
-      #dock { width: 92%; bottom: 1.5rem; }
-      .dock-btn { padding: 0.75rem 0.9rem; font-size: 0.55rem; }
-      #yearFilter { padding: 0.75rem 1.5rem 0.75rem 0.9rem; font-size: 0.55rem; }
-      .modal-header { padding: 1.5rem; }
-      .modal-body { padding: 2rem 1.5rem 6rem; }
-      #modal-text { text-align: left; }
-      #modal-title { font-size: 1.6rem; }
-      .modal-date-day { font-size: 2.5rem; }
-      #modal-nav { display: none; }
-    }
-  </style>
+  @media (max-width: 480px) {
+    body { font-size: 17px; }
+    .cover { padding-block: 3rem 2rem; }
+    .pager { grid-template-columns: 1fr; }
+    .pager a.next { text-align: left; }
+    .row .first { font-size: 1rem; }
+  }
+</style>
 </head>
 <body>
+<main id="app"></main>
 
-  <div class="noise"></div>
-  <div class="ambient"><div class="ambient-1"></div><div class="ambient-2"></div><div class="ambient-3"></div></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="star" viewBox="0 0 48 48">
+    <g fill="none" stroke="currentColor" stroke-width="1.4">
+      <rect x="10" y="10" width="28" height="28"/>
+      <rect x="10" y="10" width="28" height="28" transform="rotate(45 24 24)"/>
+      <circle cx="24" cy="24" r="5"/>
+    </g>
+  </symbol>
+</svg>
 
-  <div id="custom-cursor"></div>
+<script>
+const BOOK = { title: "Inson", author: "Jaloliddin Komolov" };
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-brand">
-      <div class="header-author" id="header-author">Jaloliddin Komolov</div>
-      <div class="header-collection" id="header-collection">Inson · Сборник</div>
-    </div>
-    <div class="header-stats">
-      <span class="read-icon">◈</span>
-      <span id="read-counter">0 / 0 o'qildi</span>
-    </div>
-  </header>
+const THEMES = {
+  iymon:   "Iymon",
+  inson:   "Inson",
+  qadar:   "Qadar",
+  vaqt:    "Vaqt",
+  sevgi:   "Sevgi",
+  jamiyat: "Jamiyat",
+  sher:    "She'r haqida"
+};
 
-  <!-- MAIN -->
-  <main>
-    <section id="poems-grid"></section>
-    <div id="empty-state">
-      <div class="empty-symbol">◆</div>
-      <p>Bu makonda hech narsa topilmadi</p>
-    </div>
-  </main>
+const POEMS = [
+  { d: "08.08.2023", th: ["inson","iymon"], text: "Hayotim qiziq, bilaman o'zim,\nKimga foyda, kimga esa kerakmas so'zim.\n\nAmmo yashayabman — men ham bir inson,\nDunyoda bor ekan mening ham o'rnim.\n\nDinim — Islomdir, kitobim — Qur'on,\nRasulimga doim aytaman salom.\n\nHayotda yashayman har lahza, har on,\nOrzularim, hayollarim — bisyor bir dunyo." },
+  { d: "10.08.2023", th: ["vaqt"], text: "Vaziyat og'irlashmoqda\nSoat yaqinlashmoqda\nO'yin-kulgu orqada\nQolib hayrlashmoqda.\n\nKunduz tugamay turib,\nTunni kutib olyabmiz.\nYoruq, nurli kunlarni\nBiz yo'qotib boryabmiz." },
+  { d: "15.12.2023", th: ["iymon","sher"], text: "Ilhom keldi — so'zlarni yozdim,\nAyni shu dam aqldan ozdim.\n\nMen insonman, odam bolasi,\nNahotki men orqada qoldim?\n\nRasululloh ummati,\ndavom etay, Sunnati.\n\nRobbim, bizni kechirsin\nRohim ismi hurmati.\n\nRahmat, Robbim, Senga shukurlar,\nYodga solding O'zingni.\n\nErta kundan boshlayman —\nYodlayman har so'zingni." },
+  { d: "19.12.2023", th: ["jamiyat"], text: "Odamlarni ko'rdim yoshlari katta,\nLekin ma'nosi yo'q, hayot g'aflatda.\nKuni tuni o'tar mehnat mashaqqatda,\nMantiqsiz hayot, nima maqsadda?" },
+  { d: "10.03.2024", th: ["sevgi"], text: "Maftun ko'zlarga mahliyo bo'lib\nMahkum bo'ldim mudom termulib,\nOy kabi nurli bu yuzni ko'rib\nSevdimmi bilmadim, lek sevinib qo'ydim.\n\nSabab tosh oynada o'zimni ko'rdim)" },
+  { d: "18.03.2024", th: ["inson"], text: "Qaddingni tik tut,\nO'zingni o'ngla,\n\nRuhingni tushurma,\nDoim rost so'zla.\n\nIbrohim hayosin,\nAllohdan so'ra,\n\nHar bir qilayotgan\nishingni o'yla." },
+  { d: "11.04.2024", th: ["iymon"], text: "Hatm kuni yoshlandi ko'zim,\nRobbim uchun boshlandi tazim.\nToqatim yetgancha qildim toatim,\nTamoman Robbim tomon yuzlandim." },
+  { d: "11.04.2024", th: ["sher"], text: "She'r yozay deyman,\nQo'lim yozmaydi,\nQalbimdagi so'zlar\nTilga bormaydi.\n\nHolatmi shu,\nEshit ey do'stim,\nMeni sendan boshqa\nHech kim ko'rmaydi." },
+  { d: "03.09.2024", th: ["vaqt"], text: "Ishim ko'p deb boshim qotadi,\nKunlar sanab oylar o'tadi.\nHaq aytarkan yoshi kattalar —\nIsh tugamas, umr ketadi." },
+  { d: "26.10.2024", th: ["inson"], text: "Kun-u tunlar doim bedorman.\nBilmam, balki xasta bemorman.\nHolim so'rab kelgan qavmimga\nSo'zlarim zo'r, yaxshi mezbonman.\nNe qilsam ham oddiy insonman.\n\nOilam uchun ishonchli posbon,\nMen ularga to'g'on, qalqonman.\nQuduqdan suv kerak bo'lsa,\nChelak uchun uzun arqonman.\nNe qilsam ham oddiy insonman.\n\nDo'stlarim bor, haqda sobit,\nTo'g'ri qo'ygan mezonlarini.\nGuvohman-ki, bari obid,\nMen ularga tirik isbotman.\nNe qilsam ham oddiy insonman.\n\nHayotimda uchragan yorim,\nNasib qilsa bo'lar ayolim,\nDoim mendan so'raydi holim,\nMen u uchun yagona inson,\nNe qilsam ham oddiy insonman.\n\nJamoat ichida bir sanoq son,\nOdam uchun nevara inson.\nVaqti kelganda beruvchiman jon,\nHamma uchun oddiy insonman." },
+  { d: "16.11.2024", th: ["iymon"], text: "Bilib turib qilyabman gunoh,\nVijdon azob beryabdi, Alloh.\nSen dunyoda yagona podshoh,\nQuling uchun bergin bir panoh.\n\nBelgi berding, \"to'xtat so'zingni\",\nBoshqa bosma, yo'qot izingni.\nQilolmadim aytgan amringni —\nVijdon azob beryabdi, Alloh.\n\nYolg'on bo'lsa, uzgin arqonni,\nO'rtamizga qo'ygin qalqonni.\nTil ostiga to'ldir talqonni —\nNafsim zulm qilyabdi, Alloh.\n\nHolim harob bo'lyabdi, Alloh,\nNahot sarob ko'ryabman, Iloh.\nUmr ozdir, bildirding O'zing,\nQonun menga aytgan har so'zing" },
+  { d: "05.07.2025", th: ["qadar"], text: "Qiyomat ko'zlarni ochgan lahzada\nMunofiq kofirlar qayg'uga botar\nDo'stim shu Kun seni topaman\nOz vaqt qoldi, qadar... bu qadar...\n\nAzroil rahimsiz muhlat bermaydi\nNavbat kelsa to'xtamas qaytmas\nBeruvchi Rabbim, jon omonati\nOlguvchi ham o'zi, qadar... bu qadar...\n\nShohmi u yo g'arib bari ketadi\nSo'ngi so'zin oxir aytadi\n\"Inson\" senga bersin Sabrun Jamil\nQabul qilgin qadar... bu qadar..." },
+  { d: "03.09.2025", th: ["inson"], text: "Yo'lim olis, chuqurlar ko'p,\nQo'limdadir kichik bir sham.\n\nOlovining mitti nuri,\nYoritadi yo'lni har dam.\n\nO'zi nozik, so'nar zumda,\nAsrash kerak shabbodadan." },
+  { d: "26.09.2025", th: ["qadar"], text: "So'zlay desak minglab so'zlar,\nLek bir jumla tuzolmadik\nDo'stim o'rning bilindi ko'p\nBiror malham topolmadik\n\nYodga keldi ajib damlar\nHar bir joyda xotiralar\nShunday ekan biz ojizmiz\nQadar deymiz xotir aylab\n\nXavotir yo'q xotirjammiz\nKo'ngil sezar biz bilamiz\nVaqt o'tadi muddat aniq\nOxir diydor ko'rishamiz" },
+  { d: "27.09.2025", th: ["sher","qadar"], text: "She'r yozishda mohir emasman,\nQalamim yozar goho bir nelar.\nNe yozsam ham, o'qigan inson\nHikmat topsin, o'ylansin, deyman.\n\nShe'riy satrlar ajib chiroyli,\nBa'zan sirlar aytilar unda.\nShoshma, to'xta, chuqur nafas ol,\nQayta o'qi — toparsan shunda.\n\nShe'r ham balki qadar misoli,\nYozilgandir qalb kitobida.\nVaqti kelsa, siyohga sizib,\nSuriladi nomai a'moliga." },
+  { d: "03.10.2025", th: ["qadar"], text: "Dunyo ko'rdi toshbaqa, maqsad sari talpinar,\nManzil aniq bo'lsa-da, taqdir uni hal qilar.\nChetdan ko'rsang, mushkulmas — daqiqalar kifoya,\nLekin toshbaqa ko'zida, butkul boshqa hikoya." },
+  { d: "23.10.2025", th: ["vaqt","iymon"], text: "har bir kunning soni aniq\nhar bir kuning soni aniq\nhar bir kundan so'rar aniq\nhar bir kunga hokim Holiq" },
+  { d: "23.10.2025", th: ["jamiyat","vaqt"], text: "Jamiyat johil — ko'plar g'avg'oda,\nG'arib qalblar, dardi dunyoda.\nDaromadi to'lsa karmonda,\nG'ofil dili — lek kuni savdoda.\n\nOqil inson, maqsadi sonmi?\nShu sonlari ko'paysa — hayot gulzormi?\nZohiran zo'r, botin marommi?\nMudom o'yla — maqsad matomi?\n\nDarhaqiqat, unutma haqni,\nAlmisog'da aytilgan ahdni.\nNasib o'ngdan olursan xatni,\nShunday ekan, qadrla vaqtni.\n\nKo'p odamzot sonlar quvladi,\nTunlar bedor, tongda mudradi.\nMudroq tutdi — haqni ko'rmadi,\nSon tugamas, umr tugadi.\n\nMahzun bo'lma, satrlar keskin,\nKeraksiz yuklaring ipini kesgin.\nShe'r ma'nosin qalb ila sezgin,\nJumla yakun — sakinat sezgin." },
+  { d: "24.10.2025", th: ["sevgi","sher"], text: "Nechun yozmam sevgi haqida,\nBarcha shoir oshiq aslida.\nUl xushhidli gulning vaslida —\nSiyohdonning qalami namdir.\n\nHis qilishla totguvchisan ta'm,\nOz-oz misli asaldir malham.\nO'ng qo'ldagi yozuvchi qalam,\nYozar goho bu mavzuda ham." },
+  { d: "27.10.2025", th: ["iymon"], text: "Dunyo bo'lsa dasturxon,\nXon kursidan kuzatar.\nNeni istasa inson,\nXon xohlasa uzatar.\n\nBa'zan inson o'ylanar —\nLoyiqmikan ushoqqa?\nXon aytadi: \"Qo'l uzat,\nGo'sht kesuvchi pichoqqa.\"\n\nDasturxon to'la ne'mat,\nBeruvchi — oliy himmat.\nOlursan, aytib: \"Rahmat\",\nBadal bo'lur itoat." },
+  { d: "27.10.2025", th: ["jamiyat"], text: "Changalda cho'g' ushlash zamoni,\nHavotirlan — nuring omonmi?\nAjratolmay yaxshi-yomonni,\nKo'rayapsan foyda, ziyonni." }
+];
 
-  <!-- DOCK -->
-  <nav id="dock">
-    <button class="dock-btn" id="search-open-btn">
-      <span class="dock-icon">⌕</span> Qidirish
-    </button>
-    <div class="dock-sep"></div>
-    <div id="year-filter-wrapper">
-      <select id="yearFilter">
-        <option value="all">Barcha yillar</option>
-      </select>
-      <span class="year-arrow">▾</span>
-    </div>
-    <div class="dock-sep"></div>
-    <button class="dock-btn" id="sort-btn">
-      <span class="dock-icon">↕</span> <span id="sort-label">Yangi</span>
-    </button>
-    <div class="dock-sep"></div>
-    <button class="dock-btn" id="random-btn">
-      <span class="dock-icon">⚄</span>
-    </button>
-  </nav>
+const MONTHS = ["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"];
 
-  <!-- SEARCH OVERLAY -->
-  <div id="search-overlay">
-    <button id="search-close">Yopish ✕</button>
-    <div class="search-box">
-      <span class="search-icon">⌕</span>
-      <input type="text" id="search-input" placeholder="She'r qidirish..." autocomplete="off" spellcheck="false">
-    </div>
-    <div id="search-count"></div>
-    <div id="search-results"></div>
-  </div>
+POEMS.forEach((p, i) => {
+  p.no = i + 1;
+  const [d, m, y] = p.d.split(".");
+  p.day = +d; p.month = +m; p.year = y;
+  p.first = p.text.trim().split("\n")[0].replace(/[,.;:!?)\s—-]+$/, "");
+  p.longDate = `${+d}-${MONTHS[+m - 1]}, ${y}-yil`;
+});
 
-  <!-- READ MODAL -->
-  <article id="read-modal">
-    <div class="modal-header">
-      <button id="modal-back">Orqaga</button>
-      <div id="modal-nav">
-        <button class="modal-nav-btn" id="prev-poem">← Oldingi</button>
-        <button class="modal-nav-btn" id="next-poem">Keyingi →</button>
-      </div>
-    </div>
-    <div class="modal-body">
-      <div id="modal-date-display">
-        <div class="modal-date-day" id="mday"></div>
-        <div class="modal-date-month" id="mmon"></div>
-        <div class="modal-date-year" id="myr"></div>
-      </div>
-      <h2 id="modal-title"></h2>
-      <div class="modal-ornament" id="modal-ornament">
-        <div class="ornament-line"></div>
-        <span class="ornament-glyph">✦</span>
-        <div class="ornament-line"></div>
-      </div>
-      <div id="modal-text"></div>
-      <div class="modal-actions" id="modal-actions">
-        <button class="modal-action-btn" id="save-btn">♡ Saqlash</button>
-        <button class="modal-action-btn" id="share-btn">↗ Ulashish</button>
-      </div>
-    </div>
-  </article>
+/* ── per-viewer storage (safe) ── */
+function load(key) { try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); } catch (e) { return new Set(); } }
+function store(key, set) { try { localStorage.setItem(key, JSON.stringify([...set])); } catch (e) {} }
+const read = load("inson-read");
+const saved = load("inson-saved");
 
-  <script>
-  // ── DATA ──
-  const rawData = [{
-    "сборник": { "название": "Inson", "автор": "Jaloliddin Komolov" },
-    "стихи": [
-      { "дата": "08.08.2023", "текст": "Hayotim qiziq, bilaman o'zim,\nKimga foyda, kimga esa kerakmas so'zim.\n\nAmmo yashayabman — men ham bir inson,\nDunyoda bor ekan mening ham o'rnim.\n\nDinim — Islomdir, kitobim — Qur'on,\nRasulimga doim aytaman salom.\n\nHayotda yashayman har lahza, har on,\nOrzularim, hayollarim — bisyor bir dunyo." },
-      { "дата": "10.08.2023", "текст": "Vaziyat og'irlashmoqda\nSoat yaqinlashmoqda\nO'yin-kulgu orqada\nQolib hayrlashmoqda.\n\nKunduz tugamay turib,\nTunni kutib olyabmiz.\nYoruq, nurli kunlarni\nBiz yo'qotib boryabmiz." },
-      { "дата": "15.12.2023", "текст": "Ilhom keldi — so'zlarni yozdim,\nAyni shu dam aqldan ozdim.\n\nMen insonman, odam bolasi,\nNahotki men orqada qoldim?\n\nRasululloh ummati,\ndavom etay, Sunnati.\n\nRobbim, bizni kechirsin\nRohim ismi hurmati.\n\nRahmat, Robbim, Senga shukurlar,\nYodga solding O'zingni.\n\nErta kundan boshlayman —\nYodlayman har so'zingni." },
-      { "дата": "19.12.2023", "текст": "Odamlarni ko'rdim yoshlari katta,\nLekin ma'nosi yo'q, hayot g'aflatda.\nKuni tuni o'tar mehnat mashaqqatda,\nMantiqsiz hayot, nima maqsadda?" },
-      { "дата": "10.03.2024", "текст": "Maftun ko'zlarga mahliyo bo'lib\nMahkum bo'ldim mudom termulib,\nOy kabi nurli bu yuzni ko'rib\nSevdimmi bilmadim, lek sevinib qo'ydim.\n\nSabab tosh oynada o'zimni ko'rdim)" },
-      { "дата": "18.03.2024", "текст": "Qaddingni tik tut,\nO'zingni o'ngla,\n\nRuhingni tushurma,\nDoim rost so'zla.\n\nIbrohim hayosin,\nAllohdan so'ra,\n\nHar bir qilayotgan\nishingni o'yla." },
-      { "дата": "11.04.2024", "текст": "Hatm kuni yoshlandi ko'zim,\nRobbim uchun boshlandi tazim.\nToqatim yetgancha qildim toatim,\nTamoman Robbim tomon yuzlandim." },
-      { "дата": "11.04.2024", "текст": "She'r yozay deyman,\nQo'lim yozmaydi,\nQalbimdagi so'zlar\nTilga bormaydi.\n\nHolatmi shu,\nEshit ey do'stim,\nMeni sendan boshqa\nHech kim ko'rmaydi." },
-      { "дата": "03.09.2024", "текст": "Ishim ko'p deb boshim qotadi,\nKunlar sanab oylar o'tadi.\nHaq aytarkan yoshi kattalar —\nIsh tugamas, umr ketadi." },
-      { "дата": "26.10.2024", "текст": "Kun-u tunlar doim bedorman.\nBilmam, balki xasta bemorman.\nHolim so'rab kelgan qavmimga\nSo'zlarim zo'r, yaxshi mezbonman.\nNe qilsam ham oddiy insonman.\n\nOilam uchun ishonchli posbon,\nMen ularga to'g'on, qalqonman.\nQuduqdan suv kerak bo'lsa,\nChelak uchun uzun arqonman.\nNe qilsam ham oddiy insonman.\n\nDo'stlarim bor, haqda sobit,\nTo'g'ri qo'ygan mezonlarini.\nGuvohman-ki, bari obid,\nMen ularga tirik isbotman.\nNe qilsam ham oddiy insonman.\n\nHayotimda uchragan yorim,\nNasib qilsa bo'lar ayolim,\nDoim mendan so'raydi holim,\nMen u uchun yagona inson,\nNe qilsam ham oddiy insonman.\n\nJamoat ichida bir sanoq son,\nOdam uchun nevara inson.\nVaqti kelganda beruvchiman jon,\nHamma uchun oddiy insonman." },
-      { "дата": "16.11.2024", "текст": "Bilib turib qilyabman gunoh,\nVijdon azob beryabdi, Alloh.\nSen dunyoda yagona podshoh,\nQuling uchun bergin bir panoh.\n\nBelgi berding, \"to'xtat so'zingni\",\nBoshqa bosma, yo'qot izingni.\nQilolmadim aytgan amringni —\nVijdon azob beryabdi, Alloh.\n\nYolg'on bo'lsa, uzgin arqonni,\nO'rtamizga qo'ygin qalqonni.\nTil ostiga to'ldir talqonni —\nNafsim zulm qilyabdi, Alloh.\n\nHolim harob bo'lyabdi, Alloh,\nNahot sarob ko'ryabman, Iloh.\nUmr ozdir, bildirding O'zing,\nQonun menga aytgan har so'zing" },
-      { "дата": "05.07.2025", "текст": "Qiyomat ko'zlarni ochgan lahzada\nMunofiq kofirlar qayg'uga botar\nDo'stim shu Kun seni topaman\nOz vaqt qoldi, qadar... bu qadar...\n\nAzroil rahimsiz muhlat bermaydi\nNavbat kelsa to'xtamas qaytmas\nBeruvchi Rabbim, jon omonati\nOlguvchi ham o'zi, qadar... bu qadar...\n\nShohmi u yo g'arib bari ketadi\nSo'ngi so'zin oxir aytadi\n\"Inson\" senga bersin Sabrun Jamil\nQabul qilgin qadar... bu qadar..." },
-      { "дата": "03.09.2025", "текст": "Yo'lim olis, chuqurlar ko'p,\nQo'limdadir kichik bir sham.\n\nOlovining mitti nuri,\nYoritadi yo'lni har dam.\n\nO'zi nozik, so'nar zumda,\nAsrash kerak shabbodadan." },
-      { "дата": "26.09.2025", "текст": "So'zlay desak minglab so'zlar,\nLek bir jumla tuzolmadik\nDo'stim o'rning bilindi ko'p\nBiror malham topolmadik\n\nYodga keldi ajib damlar\nHar bir joyda xotiralar\nShunday ekan biz ojizmiz\nQadar deymiz xotir aylab\n\nXavotir yo'q xotirjammiz\nKo'ngil sezar biz bilamiz\nVaqt o'tadi muddat aniq\nOxir diydor ko'rishamiz" },
-      { "дата": "27.09.2025", "текст": "She'r yozishda mohir emasman,\nQalamim yozar goho bir nelar.\nNe yozsam ham, o'qigan inson\nHikmat topsin, o'ylansin, deyman.\n\nShe'riy satrlar ajib chiroyli,\nBa'zan sirlar aytilar unda.\nShoshma, to'xta, chuqur nafas ol,\nQayta o'qi — toparsan shunda.\n\nShe'r ham balki qadar misoli,\nYozilgandir qalb kitobida.\nVaqti kelsa, siyohga sizib,\nSuriladi nomai a'moliga." },
-      { "дата": "03.10.2025", "текст": "Dunyo ko'rdi toshbaqa, maqsad sari talpinar,\nManzil aniq bo'lsa-da, taqdir uni hal qilar.\nChetdan ko'rsang, mushkulmas — daqiqalar kifoya,\nLekin toshbaqa ko'zida, butkul boshqa hikoya." },
-      { "дата": "23.10.2025", "текст": "har bir kunning soni aniq\nhar bir kuning soni aniq\nhar bir kundan so'rar aniq\nhar bir kunga hokim Holiq" },
-      { "дата": "23.10.2025", "текст": "Jamiyat johil — ko'plar g'avg'oda,\nG'arib qalblar, dardi dunyoda.\nDaromadi to'lsa karmonda,\nG'ofil dili — lek kuni savdoda.\n\nOqil inson, maqsadi sonmi?\nShu sonlari ko'paysa — hayot gulzormi?\nZohiran zo'r, botin marommi?\nMudom o'yla — maqsad matomi?\n\nDarhaqiqat, unutma haqni,\nAlmisog'da aytilgan ahdni.\nNasib o'ngdan olursan xatni,\nShunday ekan, qadrla vaqtni.\n\nKo'p odamzot sonlar quvladi,\nTunlar bedor, tongda mudradi.\nMudroq tutdi — haqni ko'rmadi,\nSon tugamas, umr tugadi.\n\nMahzun bo'lma, satrlar keskin,\nKeraksiz yuklaring ipini kesgin.\nShe'r ma'nosin qalb ila sezgin,\nJumla yakun — sakinat sezgin." },
-      { "дата": "24.10.2025", "текст": "Nechun yozmam sevgi haqida,\nBarcha shoir oshiq aslida.\nUl xushhidli gulning vaslida —\nSiyohdonning qalami namdir.\n\nHis qilishla totguvchisan ta'm,\nOz-oz misli asaldir malham.\nO'ng qo'ldagi yozuvchi qalam,\nYozar goho bu mavzuda ham." },
-      { "дата": "27.10.2025", "текст": "Dunyo bo'lsa dasturxon,\nXon kursidan kuzatar.\nNeni istasa inson,\nXon xohlasa uzatar.\n\nBa'zan inson o'ylanar —\nLoyiqmikan ushoqqa?\nXon aytadi: \"Qo'l uzat,\nGo'sht kesuvchi pichoqqa.\"\n\nDasturxon to'la ne'mat,\nBeruvchi — oliy himmat.\nOlursan, aytib: \"Rahmat\",\nBadal bo'lur itoat." },
-      { "дата": "27.10.2025", "текст": "Changalda cho'g' ushlash zamoni,\nHavotirlan — nuring omonmi?\nAjratolmay yaxshi-yomonni,\nKo'rayapsan foyda, ziyonni." }
-    ]
-  }];
+let filter = "all";
+const app = document.getElementById("app");
 
-  // ── MONTH NAMES ──
-  const MONTHS_UZ = ['YAN','FEV','MAR','APR','MAY','IYU','IYL','AVG','SEN','OKT','NOY','DES'];
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => c != null && n.append(c));
+  return n;
+}
 
-  // ── STATE ──
-  let poems = [];
-  let filteredPoems = [];
-  let currentSort = 'desc';
-  let currentYear = 'all';
-  let searchQuery = '';
-  let currentPoemIndex = -1;
-  let readPoems = new Set(JSON.parse(localStorage.getItem('readPoems') || '[]'));
-  let savedPoems = new Set(JSON.parse(localStorage.getItem('savedPoems') || '[]'));
+function starIcon() {
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("class", "star"); s.setAttribute("aria-hidden", "true");
+  const u = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  u.setAttribute("href", "#star"); s.append(u);
+  return s;
+}
 
-  // ── PARSE ──
-  function parse() {
-    const coll = rawData[0]['сборник'];
-    document.getElementById('header-author').textContent = coll['автор'];
-    document.getElementById('header-collection').textContent = coll['название'] + ' · Она\'т';
+/* ── CONTENTS VIEW ── */
+function renderHome() {
+  document.title = "Inson";
+  const years = [...new Set(POEMS.map(p => p.year))];
+  const fav = POEMS[14];
+  const favLines = fav.text.split("\n").slice(2, 4);
 
-    poems = rawData[0]['стихи'].map((p, i) => {
-      const lines = p['текст'].trim().split('\n');
-      const title = lines[0].replace(/[,\.!?)\(]$/, '');
-      const [d, m, y] = p['дата'].split('.');
-      return {
-        id: i,
-        title,
-        text: p['текст'],
-        dateStr: p['дата'],
-        day: d, month: m, year: y,
-        monthName: MONTHS_UZ[parseInt(m)-1],
-        ts: new Date(y, m-1, d).getTime(),
-        preview: lines.slice(0,3).join('\n'),
-      };
-    });
+  const cover = el("section", { class: "cover" },
+    el("canvas", { class: "wind", "aria-hidden": "true" }),
+    starIcon(),
+    el("div", { class: "eyebrow", text: "She'rlar to'plami" }),
+    el("h1", { text: BOOK.title }),
+    el("p", { class: "author", text: BOOK.author }),
+    el("div", { class: "meta" },
+      el("span", { class: "eyebrow", text: `${POEMS.length} ta she'r` }),
+      el("span", { class: "eyebrow", text: `${years[0]} — ${years[years.length - 1]}` }),
+      el("span", { class: "eyebrow", text: `${read.size} / ${POEMS.length} o'qildi` })
+    ),
+    el("blockquote", { class: "epigraph" },
+      ...favLines.map(l => el("span", { class: "line", text: l })),
+      el("cite", { text: `${fav.no}-she'r · ${fav.longDate}` })
+    ),
+    el("div", { class: "cover-actions" },
+      el("a", { class: "btn solid", href: "#sher-1", text: "O'qishni boshlash →" }),
+      el("button", { class: "btn", type: "button", id: "random", text: "Tasodifiy she'r", onclick: () => {
+        const r = 1 + Math.floor(Math.random() * POEMS.length);
+        location.hash = "sher-" + r;
+      }})
+    )
+  );
 
-    // year filter
-    const sel = document.getElementById('yearFilter');
-    [...new Set(poems.map(p => p.year))].sort((a,b) => b-a).forEach(yr => {
-      const o = document.createElement('option');
-      o.value = yr; o.textContent = yr;
-      sel.appendChild(o);
-    });
+  const list = el("div", { id: "list" });
+  const chips = el("div", { class: "chips", role: "group", "aria-label": "Mavzular" });
+  const head = el("div", { class: "contents-head" },
+    el("h2", { text: "Mundarija" }),
+    el("span", { class: "eyebrow", id: "count" })
+  );
 
-    updateReadCounter();
+  function chipList() {
+    chips.innerHTML = "";
+    const opts = [["all", "Barchasi", POEMS.length]];
+    for (const [k, v] of Object.entries(THEMES)) opts.push([k, v, POEMS.filter(p => p.th.includes(k)).length]);
+    if (saved.size) opts.push(["saved", "♥ Saqlangan", saved.size]);
+    if (filter === "saved" && !saved.size) filter = "all";
+    opts.forEach(([k, label, n]) => chips.append(
+      el("button", { class: "chip", type: "button", "aria-pressed": String(filter === k), onclick: () => { filter = k; chipList(); fill(); } },
+        label, el("span", { class: "n", text: n }))
+    ));
   }
 
-  function updateReadCounter() {
-    const el = document.getElementById('read-counter');
-    el.textContent = `${readPoems.size} / ${poems.length} o'qildi`;
-  }
-
-  // ── FILTER & SORT ──
-  function getFiltered() {
-    let arr = poems.filter(p => {
-      const q = searchQuery.toLowerCase();
-      const matchSearch = !q || p.text.toLowerCase().includes(q) || p.title.toLowerCase().includes(q);
-      const matchYear = currentYear === 'all' || p.year === currentYear;
-      return matchSearch && matchYear;
-    });
-    arr.sort((a,b) => currentSort === 'desc' ? b.ts - a.ts : a.ts - b.ts);
-    return arr;
-  }
-
-  // ── RENDER GRID ──
-  function renderGrid() {
-    filteredPoems = getFiltered();
-    const grid = document.getElementById('poems-grid');
-    const empty = document.getElementById('empty-state');
-    grid.innerHTML = '';
-
-    if (!filteredPoems.length) {
-      empty.classList.add('visible');
-      return;
-    }
-    empty.classList.remove('visible');
-
-    filteredPoems.forEach((poem, idx) => {
-      const card = document.createElement('article');
-      card.className = 'poem-card';
-      card.dataset.id = poem.id;
-
-      const preview = poem.preview.replace(/\n/g, '<br>');
-
-      card.innerHTML = `
-        <span class="card-ornament">✦</span>
-        <div class="date-block">
-          <div class="date-day">${poem.day}</div>
-          <div class="date-month">${poem.monthName}</div>
-          <div class="date-year">${poem.year}</div>
-        </div>
-        <h3 class="card-title">${poem.title}</h3>
-        <div class="card-divider"></div>
-        <div class="card-preview">${preview}</div>
-        <div class="card-read-btn">O'qish</div>
-      `;
-      card.addEventListener('click', () => openModal(poem, idx));
-      grid.appendChild(card);
-    });
-
-    // staggered reveal with IntersectionObserver
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const card = entry.target;
-          const i = [...grid.children].indexOf(card);
-          setTimeout(() => card.classList.add('visible'), i * 120);
-          observer.unobserve(card);
-        }
-      });
-    }, { threshold: 0.05 });
-
-    [...grid.querySelectorAll('.poem-card')].forEach(c => observer.observe(c));
-  }
-
-  // ── MODAL ──
-  function openModal(poem, filteredIdx) {
-    currentPoemIndex = filteredIdx;
-    fillModal(poem);
-    const modal = document.getElementById('read-modal');
-    modal.scrollTop = 0;
-    modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-
-    // mark read
-    readPoems.add(poem.id);
-    localStorage.setItem('readPoems', JSON.stringify([...readPoems]));
-    updateReadCounter();
-
-    // reveal elements
-    setTimeout(() => {
-      document.getElementById('modal-date-display').classList.add('revealed');
-      document.getElementById('modal-title').classList.add('revealed');
-      document.getElementById('modal-ornament').classList.add('revealed');
-      document.getElementById('modal-text').classList.add('revealed');
-      document.getElementById('modal-actions').classList.add('revealed');
-    }, 80);
-
-    // save btn state
-    const saveBtn = document.getElementById('save-btn');
-    saveBtn.textContent = savedPoems.has(poem.id) ? '♥ Saqlangan' : '♡ Saqlash';
-    saveBtn.classList.toggle('saved', savedPoems.has(poem.id));
-    saveBtn.onclick = () => {
-      if (savedPoems.has(poem.id)) { savedPoems.delete(poem.id); saveBtn.textContent = '♡ Saqlash'; saveBtn.classList.remove('saved'); }
-      else { savedPoems.add(poem.id); saveBtn.textContent = '♥ Saqlangan'; saveBtn.classList.add('saved'); }
-      localStorage.setItem('savedPoems', JSON.stringify([...savedPoems]));
-    };
-    document.getElementById('share-btn').onclick = () => {
-      if (navigator.share) { navigator.share({ title: poem.title, text: poem.text }); }
-      else if (navigator.clipboard) { navigator.clipboard.writeText(poem.title + '\n\n' + poem.text); }
-    };
-  }
-
-  function fillModal(poem) {
-    document.getElementById('mday').textContent = poem.day;
-    document.getElementById('mmon').textContent = poem.monthName + ' ' + poem.year;
-    document.getElementById('myr').textContent = poem.dateStr;
-    document.getElementById('modal-title').textContent = poem.title;
-
-    // reset animation states
-    ['modal-date-display','modal-title','modal-ornament','modal-text','modal-actions'].forEach(id => {
-      document.getElementById(id).classList.remove('revealed');
-    });
-
-    // render stanzas
-    const stanzas = poem.text.split(/\n\n+/);
-    const textEl = document.getElementById('modal-text');
-    textEl.innerHTML = stanzas.map(stanza => {
-      const lines = stanza.split('\n').map(l => `<span class="line">${l}</span>`).join('');
-      return `<div class="stanza">${lines}</div>`;
-    }).join('');
-  }
-
-  function closeModal() {
-    const modal = document.getElementById('read-modal');
-    ['modal-date-display','modal-title','modal-ornament','modal-text','modal-actions'].forEach(id => {
-      document.getElementById(id).classList.remove('revealed');
-    });
-    setTimeout(() => {
-      modal.classList.remove('open');
-      document.body.style.overflow = '';
-    }, 600);
-  }
-
-  function navigateModal(dir) {
-    const newIdx = currentPoemIndex + dir;
-    if (newIdx < 0 || newIdx >= filteredPoems.length) return;
-    currentPoemIndex = newIdx;
-    const poem = filteredPoems[newIdx];
-    fillModal(poem);
-    document.getElementById('read-modal').scrollTop = 0;
-    setTimeout(() => {
-      document.getElementById('modal-date-display').classList.add('revealed');
-      document.getElementById('modal-title').classList.add('revealed');
-      document.getElementById('modal-ornament').classList.add('revealed');
-      document.getElementById('modal-text').classList.add('revealed');
-      document.getElementById('modal-actions').classList.add('revealed');
-    }, 80);
-
-    readPoems.add(poem.id);
-    localStorage.setItem('readPoems', JSON.stringify([...readPoems]));
-    updateReadCounter();
-  }
-
-  // ── SEARCH ──
-  let searchDebounce;
-  function renderSearchResults(q) {
-    const results = document.getElementById('search-results');
-    const count = document.getElementById('search-count');
-    results.innerHTML = '';
-    if (!q.trim()) { count.textContent = ''; return; }
-
-    const matches = poems.filter(p =>
-      p.text.toLowerCase().includes(q.toLowerCase()) || p.title.toLowerCase().includes(q.toLowerCase())
-    );
-    count.textContent = `${matches.length} ta she'r topildi`;
-
-    matches.forEach(poem => {
-      const item = document.createElement('div');
-      item.className = 'search-result-item';
-
-      const snippet = (() => {
-        const idx = poem.text.toLowerCase().indexOf(q.toLowerCase());
-        if (idx < 0) return poem.preview;
-        const start = Math.max(0, idx-30);
-        const end = Math.min(poem.text.length, idx+q.length+50);
-        const raw = poem.text.slice(start, end).replace(/\n/g, ' ');
-        return raw.replace(new RegExp(q, 'gi'), m => `<mark class="search-highlight">${m}</mark>`);
-      })();
-
-      item.innerHTML = `
-        <div class="search-result-date">
-          <div class="mini-day">${poem.day}</div>
-          <div class="mini-mon">${poem.monthName}</div>
-          <div class="mini-yr">${poem.year}</div>
-        </div>
-        <div class="search-result-content">
-          <div class="search-result-title">${poem.title}</div>
-          <div class="search-result-snippet">...${snippet}...</div>
-        </div>`;
-      item.addEventListener('click', () => {
-        closeSearch();
-        const fi = filteredPoems.findIndex(p => p.id === poem.id);
-        openModal(poem, fi >= 0 ? fi : 0);
-      });
-      results.appendChild(item);
+  function fill() {
+    list.innerHTML = "";
+    const shown = POEMS.filter(p =>
+      filter === "all" ? true : filter === "saved" ? saved.has(p.no) : p.th.includes(filter));
+    document.getElementById("count").textContent = `${shown.length} ta`;
+    if (!shown.length) { list.append(el("p", { class: "empty", text: "Bu bo'limda hozircha she'r yo'q." })); return; }
+    years.forEach(y => {
+      const items = shown.filter(p => p.year === y);
+      if (!items.length) return;
+      list.append(el("section", { class: "year" },
+        el("h3", {}, y, el("span", { text: `${items.length} ta she'r` })),
+        el("ul", { class: "rows" }, items.map(p => el("li", {},
+          el("a", { class: "row" + (read.has(p.no) ? " read" : ""), href: "#sher-" + p.no },
+            el("span", { class: "no", text: String(p.no).padStart(2, "0") }),
+            el("span", { class: "first", text: p.first }),
+            saved.has(p.no) ? el("span", { class: "saved", "aria-label": "saqlangan", text: "♥" }) : null,
+            el("span", { class: "lead", "aria-hidden": "true" }),
+            el("span", { class: "date", text: `${String(p.day).padStart(2,"0")}.${String(p.month).padStart(2,"0")}` })
+          )
+        )))
+      ));
     });
   }
 
-  function openSearch() {
-    document.getElementById('search-overlay').classList.add('open');
-    setTimeout(() => document.getElementById('search-input').focus(), 100);
-  }
-  function closeSearch() {
-    document.getElementById('search-overlay').classList.remove('open');
-  }
+  const contents = el("section", { class: "contents", id: "mundarija" }, head, chips, list);
 
-  // ── CUSTOM CURSOR ──
-  const cur = document.getElementById('custom-cursor');
-  let cx = 0, cy = 0, tx = 0, ty = 0;
-  if (window.matchMedia('(pointer: fine)').matches) {
-    document.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; });
-    const animCursor = () => {
-      cx += (tx - cx) * 0.15;
-      cy += (ty - cy) * 0.15;
-      cur.style.left = cx + 'px';
-      cur.style.top = cy + 'px';
-      requestAnimationFrame(animCursor);
-    };
-    animCursor();
-    document.addEventListener('mouseover', e => {
-      const interactable = e.target.closest('button, a, select, input, .poem-card, .search-result-item, .modal-nav-btn');
-      cur.classList.toggle('expanded', !!interactable);
-    });
-  }
+  const about = el("section", { class: "about" },
+    el("h2", { text: "To'plam haqida" }),
+    el("p", { text: `“${BOOK.title}” to'plamiga ${BOOK.author}ning ${years[0]}–${years[years.length-1]}-yillarda yozgan ${POEMS.length} ta she'ri kirgan.` }),
+    el("p", { text: "She'rlar yozilgan sanasi bo'yicha tartiblangan. Har birini alohida ochish, saqlash va havolasini do'stga yuborish mumkin." })
+  );
 
-  // ── SWIPE SUPPORT ──
-  let touchStartX = 0;
-  document.getElementById('read-modal').addEventListener('touchstart', e => {
-    touchStartX = e.changedTouches[0].screenX;
-  }, { passive: true });
-  document.getElementById('read-modal').addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].screenX - touchStartX;
-    if (Math.abs(dx) > 60) navigateModal(dx < 0 ? 1 : -1);
-  }, { passive: true });
+  app.replaceChildren(el("div", { class: "wrap view" }, cover, contents, about));
+  startWind(cover.querySelector(".wind"));
+  chipList(); fill();
+}
 
-  // ── EVENT LISTENERS ──
-  document.addEventListener('DOMContentLoaded', () => {
-    parse();
-    renderGrid();
+/* ── POEM VIEW ── */
+function renderPoem(no) {
+  const p = POEMS[no - 1];
+  if (!p) { location.hash = ""; return; }
+  read.add(no); store("inson-read", read);
+  document.title = `${p.first} — Inson`;
 
-    document.getElementById('search-open-btn').addEventListener('click', openSearch);
-    document.getElementById('search-close').addEventListener('click', closeSearch);
-    document.getElementById('search-input').addEventListener('input', e => {
-      clearTimeout(searchDebounce);
-      searchDebounce = setTimeout(() => renderSearchResults(e.target.value), 250);
-    });
+  const prev = POEMS[no - 2], next = POEMS[no];
+  const stanzas = p.text.split(/\n\s*\n/);
+  const note = el("div", { class: "note", role: "status" });
 
-    document.getElementById('yearFilter').addEventListener('change', e => {
-      currentYear = e.target.value; renderGrid();
-    });
-
-    document.getElementById('sort-btn').addEventListener('click', () => {
-      currentSort = currentSort === 'desc' ? 'asc' : 'desc';
-      document.getElementById('sort-label').textContent = currentSort === 'desc' ? 'Yangi' : 'Eski';
-      renderGrid();
-    });
-
-    document.getElementById('random-btn').addEventListener('click', () => {
-      const r = Math.floor(Math.random() * poems.length);
-      const fi = filteredPoems.findIndex(p => p.id === poems[r].id);
-      openModal(poems[r], fi >= 0 ? fi : 0);
-    });
-
-    document.getElementById('modal-back').addEventListener('click', closeModal);
-    document.getElementById('prev-poem').addEventListener('click', () => navigateModal(-1));
-    document.getElementById('next-poem').addEventListener('click', () => navigateModal(1));
-
-    document.addEventListener('keydown', e => {
-      const modalOpen = document.getElementById('read-modal').classList.contains('open');
-      const searchOpen = document.getElementById('search-overlay').classList.contains('open');
-      if (e.key === 'Escape') { if (modalOpen) closeModal(); if (searchOpen) closeSearch(); }
-      if (modalOpen) {
-        if (e.key === 'ArrowLeft') navigateModal(-1);
-        if (e.key === 'ArrowRight') navigateModal(1);
-      }
-    });
+  const saveBtn = el("button", { class: "btn", type: "button", "aria-pressed": String(saved.has(no)) });
+  const setSave = () => { const on = saved.has(no); saveBtn.textContent = on ? "♥ Saqlangan" : "♡ Saqlash"; saveBtn.setAttribute("aria-pressed", String(on)); };
+  setSave();
+  saveBtn.addEventListener("click", () => {
+    saved.has(no) ? saved.delete(no) : saved.add(no);
+    store("inson-saved", saved); setSave();
   });
-  </script>
+
+  function copy(text, done) {
+    const fallback = () => { note.textContent = "Nusxalab bo'lmadi. Matnni belgilab, qo'lda nusxalang."; };
+    try {
+      navigator.clipboard.writeText(text).then(() => { note.textContent = done; }, fallback);
+    } catch (e) { fallback(); }
+  }
+
+  const page = el("div", { class: "wrap view" },
+    el("header", { class: "bar" },
+      el("a", { href: "#mundarija", text: "← Mundarija" }),
+      el("span", { class: "pos", text: `${String(no).padStart(2,"0")} / ${POEMS.length}` })
+    ),
+    el("article", { class: "poem" },
+      el("div", { class: "poem-head" },
+        el("div", { class: "big", text: String(no).padStart(2, "0") }),
+        el("div", { class: "eyebrow", text: p.longDate }),
+        el("div", { class: "tags" }, p.th.map(t =>
+          el("button", { class: "tag", type: "button", text: THEMES[t], onclick: () => { filter = t; location.hash = "mundarija"; } })))
+      ),
+      el("h1", { class: "eyebrow", style: "position:absolute;left:-9999px", text: p.first }),
+      el("div", { class: "text" }, stanzas.map(s =>
+        el("p", { class: "stanza" }, s.split("\n").map(l => el("span", { class: "line", text: l })))
+      )),
+      el("div", { class: "actions" },
+        saveBtn,
+        el("button", { class: "btn", type: "button", text: "Matnni nusxalash", onclick: () =>
+          copy(`${p.text}\n\n— ${BOOK.author}, ${p.longDate}`, "Matn nusxalandi.") }),
+        el("button", { class: "btn", type: "button", text: "Havolani nusxalash", onclick: () =>
+          copy(location.href, "Havola nusxalandi. Endi do'stingizga yuborishingiz mumkin.") })
+      ),
+      note
+    ),
+    el("nav", { class: "pager", "aria-label": "She'rlar" },
+      prev ? el("a", { href: "#sher-" + prev.no },
+        el("span", { class: "eyebrow", text: "← Oldingi" }), el("span", { class: "t", text: prev.first }))
+        : el("span", { class: "ghost" }),
+      next ? el("a", { class: "next", href: "#sher-" + next.no },
+        el("span", { class: "eyebrow", text: "Keyingi →" }), el("span", { class: "t", text: next.first }))
+        : el("a", { class: "next", href: "#mundarija" },
+        el("span", { class: "eyebrow", text: "Oxiri" }), el("span", { class: "t", text: "Mundarijaga qaytish" }))
+    ),
+    el("p", { class: "hint", text: "Telefonda: chapga yoki o'ngga suring · Kompyuterda: ← → tugmalari" })
+  );
+  app.replaceChildren(page);
+}
+
+/* ── ROUTER ── */
+function route() {
+  const h = location.hash.replace("#", "");
+  const m = h.match(/^sher-(\d+)$/);
+  if (m) { renderPoem(+m[1]); window.scrollTo(0, 0); }
+  else {
+    renderHome();
+    if (h === "mundarija") document.getElementById("mundarija").scrollIntoView();
+    else window.scrollTo(0, 0);
+  }
+}
+function current() { const m = location.hash.match(/^#sher-(\d+)$/); return m ? +m[1] : 0; }
+function go(dir) {
+  const n = current(); if (!n) return;
+  const t = n + dir; if (t >= 1 && t <= POEMS.length) location.hash = "sher-" + t;
+}
+
+window.addEventListener("hashchange", route);
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input, textarea")) return;
+  if (e.key === "ArrowLeft") go(-1);
+  if (e.key === "ArrowRight") go(1);
+  if (e.key === "Escape" && current()) location.hash = "mundarija";
+});
+let tx = 0, ty = 0;
+document.addEventListener("touchstart", e => { tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, { passive: true });
+document.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+/* ── WIND (shabboda) ── */
+function startWind(cv) {
+  const ctx = cv.getContext("2d");
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W = 0, H = 0, dpr = 1, streaks = [], motes = [], visible = true, t0 = performance.now();
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function colors() {
+    const cs = getComputedStyle(document.documentElement);
+    return { line: cs.getPropertyValue("--muted").trim() || "#7f8697", dot: cs.getPropertyValue("--lapis").trim() || "#1b6a78" };
+  }
+  let col = colors();
+
+  function newStreak(anywhere) {
+    const len = rnd(W * .18, W * .45);
+    return { x: anywhere ? rnd(-len, W) : rnd(-len * 1.6, -len), y: rnd(H * .08, H * .92), len,
+      speed: rnd(.35, 1.0), amp: rnd(4, 16), freq: rnd(.006, .014), ph: rnd(0, 6.28), w: rnd(.6, 1.3), a: rnd(.18, .45) };
+  }
+  function newMote(anywhere) {
+    return { x: anywhere ? rnd(0, W) : rnd(-40, -5), y: rnd(0, H), r: rnd(.8, 2), sp: rnd(.6, 1.6), ph: rnd(0, 6.28), a: rnd(.25, .6) };
+  }
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = Math.round(Math.max(7, Math.min(16, W / 60)));
+    streaks = Array.from({ length: n }, () => newStreak(true));
+    motes = Array.from({ length: Math.round(n * 1.4) }, () => newMote(true));
+  }
+
+  function frame(now) {
+    if (!cv.isConnected) return;
+    const time = (now - t0) / 1000;
+    // gusts: slow swell plus an occasional stronger breath
+    const gust = .55 + .3 * Math.sin(time * .35) + .35 * Math.max(0, Math.sin(time * .9 + 1.3)) ** 6;
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineCap = "round";
+    ctx.strokeStyle = col.line;
+    for (const s of streaks) {
+      if (!still) s.x += s.speed * gust * 2.2;
+      const steps = 28;
+      for (let i = 0; i < steps; i++) {
+        const t1 = i / steps, t2 = (i + 1) / steps;
+        const x1 = s.x + t1 * s.len, x2 = s.x + t2 * s.len;
+        const y1 = s.y + Math.sin(x1 * s.freq + s.ph + time * .8) * s.amp * gust;
+        const y2 = s.y + Math.sin(x2 * s.freq + s.ph + time * .8) * s.amp * gust;
+        ctx.globalAlpha = s.a * Math.sin(Math.PI * t1) * Math.min(1, gust);
+        ctx.lineWidth = s.w;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      }
+      if (s.x > W + 20) Object.assign(s, newStreak(false));
+    }
+    ctx.fillStyle = col.dot;
+    for (const m of motes) {
+      if (!still) { m.x += m.sp * gust * 2.6; m.y += Math.sin(time * 1.4 + m.ph) * .35; }
+      ctx.globalAlpha = m.a;
+      ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill();
+      if (m.x > W + 10) Object.assign(m, newMote(false));
+    }
+    ctx.globalAlpha = 1;
+    if (!still && visible) requestAnimationFrame(frame);
+  }
+
+  resize();
+  frame(performance.now());
+  const ro = new ResizeObserver(() => { if (cv.isConnected) { resize(); if (still) frame(performance.now()); } });
+  ro.observe(cv);
+  const io = new IntersectionObserver(([e]) => {
+    const was = visible; visible = e.isIntersecting && !document.hidden;
+    if (visible && !was && !still) requestAnimationFrame(frame);
+  });
+  io.observe(cv);
+  document.addEventListener("visibilitychange", () => {
+    const was = visible; visible = !document.hidden;
+    if (visible && !was && !still && cv.isConnected) requestAnimationFrame(frame);
+  });
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  mq.addEventListener && mq.addEventListener("change", () => { col = colors(); });
+}
+
+route();
+</script>
 </body>
 </html>

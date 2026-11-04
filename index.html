@@ -241,6 +241,17 @@
   .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 2.4rem; padding-top: 1.6rem; border-top: 1px solid var(--rule); }
   .note { font-family: var(--f-mono); font-size: .72rem; color: var(--lapis); min-height: 1.2em; margin-top: .6rem; }
 
+  /* ── AUDIO PLAYER ── */
+  .player { display: flex; align-items: center; gap: .9rem; padding: .8rem .9rem; border: 1px solid var(--rule); border-radius: 4px; margin: -.6rem 0 2rem; background: var(--paper-2); }
+  .play { width: 2.75rem; height: 2.75rem; flex: none; border-radius: 50%; border: 0; background: var(--lapis); color: var(--paper); cursor: pointer; display: grid; place-items: center; transition: transform .15s; }
+  .play:hover { transform: scale(1.06); }
+  .play svg { width: 16px; height: 16px; fill: currentColor; }
+  .player-mid { flex: 1; min-width: 0; display: grid; gap: .25rem; }
+  .player-label { display: flex; gap: .6rem; align-items: baseline; justify-content: space-between; }
+  .player .by { font-family: var(--f-mono); font-size: .64rem; color: var(--muted); }
+  .seek { width: 100%; accent-color: var(--lapis); margin: 0; height: 1.2rem; cursor: pointer; }
+  .time { font-family: var(--f-mono); font-size: .7rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
   /* ── IMAGE MAKER ── */
   .maker { margin-top: 1.4rem; padding: 1.2rem; border: 1px solid var(--rule); border-radius: 4px; background: var(--paper-2); display: grid; gap: 1rem; }
   .maker h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.25rem; margin: 0; }
@@ -292,6 +303,8 @@
 <script>
 const BOOK = { title: "Inson", author: "Jaloliddin Komolov", site: "jaloliddin2033.github.io/sher-uchun" };
 const PUBLIC_URL = "https://jaloliddin2033.github.io/sher-uchun/";
+/* Ovozli she'rlar: raqam → fayl. Yangi ovoz qo'shilganda shu yerga yoziladi. */
+const AUDIO = { 15: "audio/15.mp3" };
 
 const THEMES = {
   iymon: "Iymon", inson: "Inson", qadar: "Qadar", vaqt: "Vaqt",
@@ -529,6 +542,7 @@ function renderHome() {
             el("span", { class: "no", text: pad2(p.no) }),
             el("span", { class: "first", text: T(p.first) }),
             saved.has(p.no) ? el("span", { class: "saved", "aria-label": T("saqlangan"), text: "♥" }) : null,
+            AUDIO[p.no] ? el("span", { class: "saved", "aria-label": T("ovozli"), title: T("ovozli"), text: "♪" }) : null,
             el("span", { class: "lead", "aria-hidden": "true" }),
             el("span", { class: "date", text: `${pad2(p.day)}.${pad2(p.month)}` })
           )
@@ -640,6 +654,7 @@ function renderPoem(no, opts = {}) {
       ),
       el("h1", { style: "position:absolute;left:-9999px", text: p.first }),
       el("div", { class: "tools" }, slowBtn, makerBtn),
+      AUDIO[no] ? makePlayer(AUDIO[no], note) : null,
       slowHint,
       textEl,
       moreBtn,
@@ -665,6 +680,44 @@ function renderPoem(no, opts = {}) {
   applyScript(app);
   paintSlow();
   document.title = `${T(p.first)} — ${T("Inson")}`;
+}
+
+/* ── AUDIO PLAYER ── */
+let currentAudio = null;
+const ICON_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="1"/></svg>';
+function makePlayer(src, note) {
+  const audio = el("audio", { preload: "metadata", src });
+  const btn = el("button", { class: "play", type: "button" });
+  const bar = el("input", { class: "seek", type: "range", min: "0", max: "1000", value: "0", id: "seek", "aria-label": "Ovoz joyi" });
+  const time = el("span", { class: "time", text: "0:00" });
+  const fmt = s => isFinite(s) && s > 0 ? `${Math.floor(s / 60)}:${pad2(Math.floor(s % 60))}` : "0:00";
+  let seeking = false;
+  const paint = () => {
+    const on = !audio.paused;
+    btn.innerHTML = on ? ICON_PAUSE : ICON_PLAY;
+    btn.setAttribute("aria-label", T(on ? "To'xtatish" : "Tinglash"));
+    time.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+    if (!seeking && audio.duration) bar.value = String(Math.round(audio.currentTime / audio.duration * 1000));
+  };
+  btn.addEventListener("click", () => {
+    if (audio.paused) audio.play().catch(() => { note.textContent = T("Ovozni yoqib bo'lmadi. Qayta urinib ko'ring."); });
+    else audio.pause();
+  });
+  ["play", "pause", "timeupdate", "loadedmetadata", "ended"].forEach(ev => audio.addEventListener(ev, paint));
+  audio.addEventListener("error", () => { note.textContent = T("Ovoz fayli yuklanmadi."); });
+  bar.addEventListener("input", () => { seeking = true; if (audio.duration) time.textContent = `${fmt(bar.value / 1000 * audio.duration)} / ${fmt(audio.duration)}`; });
+  bar.addEventListener("change", () => { if (audio.duration) audio.currentTime = bar.value / 1000 * audio.duration; seeking = false; });
+  currentAudio = audio;
+  paint();
+  return el("div", { class: "player" },
+    audio, btn,
+    el("div", { class: "player-mid" },
+      el("div", { class: "player-label" },
+        el("span", { class: "eyebrow", text: "Tinglash" }),
+        time),
+      bar,
+      el("span", { class: "by", text: "Sun'iy intellekt ovozi" })));
 }
 
 function copy(text, done, note) {
@@ -908,6 +961,7 @@ function route(opts = {}) {
   const y = window.scrollY;
   const h = location.hash.replace("#", "");
   const m = h.match(/^sher-(\d+)$/);
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
   if (m) { if (windStop) windStop(); renderPoem(+m[1], opts); } else renderHome();
   if (opts.keepScroll) { window.scrollTo(0, y); return; }
   if (!m && (h === "mundarija" || h === "ilhom")) document.getElementById(h).scrollIntoView();

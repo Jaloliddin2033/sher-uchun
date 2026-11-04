@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Inson — Jaloliddin Komolovning she'rlar to'plami (2023–2025).">
+<meta name="description" content="Inson — Jaloliddin Komolovning she'rlar to'plami (2023–2025). 21 ta she'r.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inson — Jaloliddin Komolov">
+<meta property="og:description" content="She'rlar to'plami, 2023–2025. 21 ta she'r: iymon, qadar, inson, vaqt haqida.">
+<meta property="og:url" content="https://jaloliddin2033.github.io/sher-uchun/">
+<meta property="og:locale" content="uz_UZ">
+<meta name="theme-color" content="#eceee8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121620" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%231b6a78' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 3 L36 26 L31 37 L17 37 L12 26 Z'/%3E%3Cline x1='24' y1='3' x2='24' y2='23'/%3E%3Crect x='17' y='37' width='14' height='8' rx='1'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -284,6 +291,7 @@
 
 <script>
 const BOOK = { title: "Inson", author: "Jaloliddin Komolov", site: "jaloliddin2033.github.io/sher-uchun" };
+const PUBLIC_URL = "https://jaloliddin2033.github.io/sher-uchun/";
 
 const THEMES = {
   iymon: "Iymon", inson: "Inson", qadar: "Qadar", vaqt: "Vaqt",
@@ -383,7 +391,10 @@ function applyScript(root) {
   });
   const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
   nodes.forEach(n => { n.nodeValue = toCyr(n.nodeValue); });
-  root.querySelectorAll("[aria-label]").forEach(e => { if (!e.closest("[data-keep]")) e.setAttribute("aria-label", toCyr(e.getAttribute("aria-label"))); });
+  root.querySelectorAll("[aria-label], [title], [alt]").forEach(e => {
+    if (e.closest("[data-keep]")) return;
+    ["aria-label", "title", "alt"].forEach(a => { if (e.hasAttribute(a)) e.setAttribute(a, toCyr(e.getAttribute(a))); });
+  });
 }
 
 /* ── helpers ── */
@@ -410,7 +421,7 @@ function svgUse(id, cls) {
 const pad2 = n => String(n).padStart(2, "0");
 
 function scriptSwitch() {
-  const set = v => { if (script === v) return; script = v; storeVal("inson-script", v); route({ keepScroll: true }); };
+  const set = v => { if (script === v) return; script = v; storeVal("inson-script", v); route({ keepScroll: true, noInk: true }); };
   return el("div", { class: "script", role: "group", "aria-label": "Yozuv", "data-keep": "" },
     el("button", { type: "button", "aria-pressed": String(script === "lat"), onclick: () => set("lat"), text: "Lotin" }),
     el("button", { type: "button", "aria-pressed": String(script === "cyr"), onclick: () => set("cyr"), text: "Кирилл" })
@@ -544,7 +555,7 @@ function renderHome() {
 
 /* ── POEM VIEW ── */
 let slowNext = null;
-function renderPoem(no) {
+function renderPoem(no, opts = {}) {
   const p = POEMS[no - 1];
   if (!p) { location.hash = ""; return; }
   read.add(no); storeSet("inson-read", read);
@@ -597,7 +608,7 @@ function renderPoem(no) {
     paintSlow();
   });
 
-  if (slowMode) shown = 1; else if (!reduceMotion) textEl.classList.add("ink");
+  if (slowMode) shown = 1; else if (!reduceMotion && !opts.noInk) textEl.classList.add("ink");
 
   /* image maker */
   const maker = makeImageMaker(p, note);
@@ -638,7 +649,7 @@ function renderPoem(no) {
         el("button", { class: "btn", type: "button", text: "Matnni nusxalash", onclick: () =>
           copy(`${T(p.text)}\n\n— ${T(BOOK.author)}, ${T(p.longDate)}`, T("Matn nusxalandi."), note) }),
         el("button", { class: "btn", type: "button", text: "Havolani nusxalash", onclick: () =>
-          copy(location.href, T("Havola nusxalandi. Endi do'stingizga yuborishingiz mumkin."), note) })
+          copy(PUBLIC_URL + "#sher-" + no, T("Havola nusxalandi. Endi do'stingizga yuborishingiz mumkin."), note) })
       ),
       note
     ),
@@ -799,6 +810,7 @@ async function drawCard(p, stanzas, fmt, look) {
   };
   const heightOf = (r, s) => r.reduce((h, x) => h + (x === null ? s * .8 : s * 1.55), 0);
   for (; size >= 30; size -= 2) { rows = layout(size); if (heightOf(rows, size) <= areaBot - areaTop) break; }
+  if (size < 30) { size = 30; rows = layout(30); }
   ctx.font = `400 ${size}px "Spectral", Georgia, serif`;
   let y = areaTop + ((areaBot - areaTop) - heightOf(rows, size)) / 2 + size;
   ctx.fillStyle = C.ink;
@@ -817,7 +829,9 @@ async function drawCard(p, stanzas, fmt, look) {
 }
 
 /* ── WIND (shabboda) on the cover ── */
+let windStop = null;
 function startWind(cv) {
+  if (windStop) windStop();
   const ctx = cv.getContext("2d");
   const still = reduceMotion;
   let W = 0, H = 0, dpr = 1, streaks = [], motes = [], visible = true;
@@ -866,17 +880,27 @@ function startWind(cv) {
     if (!still && visible) requestAnimationFrame(frame);
   }
   resize(); frame(performance.now());
-  new ResizeObserver(() => { if (cv.isConnected) { resize(); if (still) frame(performance.now()); } }).observe(cv);
-  new IntersectionObserver(([e]) => {
+  const ro = new ResizeObserver(() => { if (cv.isConnected) { resize(); if (still) frame(performance.now()); } });
+  ro.observe(cv);
+  const io = new IntersectionObserver(([e]) => {
     const was = visible; visible = e.isIntersecting && !document.hidden;
     if (visible && !was && !still) requestAnimationFrame(frame);
-  }).observe(cv);
-  document.addEventListener("visibilitychange", () => {
+  });
+  io.observe(cv);
+  const onVis = () => {
     const was = visible; visible = !document.hidden;
     if (visible && !was && !still && cv.isConnected) requestAnimationFrame(frame);
-  });
+  };
+  document.addEventListener("visibilitychange", onVis);
   const mq = window.matchMedia("(prefers-color-scheme: dark)");
-  mq.addEventListener && mq.addEventListener("change", () => { col = colors(); });
+  const onMq = () => { col = colors(); };
+  mq.addEventListener && mq.addEventListener("change", onMq);
+  windStop = () => {
+    ro.disconnect(); io.disconnect();
+    document.removeEventListener("visibilitychange", onVis);
+    mq.removeEventListener && mq.removeEventListener("change", onMq);
+    windStop = null;
+  };
 }
 
 /* ── ROUTER ── */
@@ -884,7 +908,7 @@ function route(opts = {}) {
   const y = window.scrollY;
   const h = location.hash.replace("#", "");
   const m = h.match(/^sher-(\d+)$/);
-  if (m) renderPoem(+m[1]); else renderHome();
+  if (m) { if (windStop) windStop(); renderPoem(+m[1], opts); } else renderHome();
   if (opts.keepScroll) { window.scrollTo(0, y); return; }
   if (!m && (h === "mundarija" || h === "ilhom")) document.getElementById(h).scrollIntoView();
   else window.scrollTo(0, 0);

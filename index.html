@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  /* Layout: a book. Cover + mundarija (contents) on one page, each poem on its own page (#sher-N). Single narrow reading column. */
+  /* Layout: a book. Cover + ilhom xaritasi + mundarija on one page, each poem on its own page (#sher-N). Single narrow reading column. */
   :root {
     --paper: #eceee8;
     --paper-2: #e2e5de;
@@ -27,6 +27,7 @@
     --rule: #c9cdc4;
     --lapis: #1b6a78;
     --lapis-wash: rgba(27,106,120,.10);
+    --glow: rgba(255,176,92,0);
     --f-display: "Marcellus", "Times New Roman", serif;
     --f-body: "Spectral", Georgia, "Times New Roman", serif;
     --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -35,12 +36,14 @@
     :root:not([data-theme="light"]) {
       --paper: #121620; --paper-2: #1a1f2b; --ink: #dfe4ea; --ink-soft: #aab2c0;
       --muted: #737c8d; --rule: #2b3241; --lapis: #62b8c4; --lapis-wash: rgba(98,184,196,.12);
+      --glow: rgba(255,176,92,.11);
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --paper: #121620; --paper-2: #1a1f2b; --ink: #dfe4ea; --ink-soft: #aab2c0;
     --muted: #737c8d; --rule: #2b3241; --lapis: #62b8c4; --lapis-wash: rgba(98,184,196,.12);
+    --glow: rgba(255,176,92,.11);
     color-scheme: dark;
   }
 
@@ -63,13 +66,21 @@
 
   .wrap { max-width: 38rem; margin: 0 auto; }
   .view { animation: in .45s ease both; }
-  @keyframes in { from { opacity: .0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .view { animation: none; } html { scroll-behavior: auto; } }
+  @keyframes in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
   .eyebrow {
     font-family: var(--f-mono); font-size: .72rem; letter-spacing: .14em;
     text-transform: uppercase; color: var(--muted);
   }
+  .section-title { font-family: var(--f-display); font-weight: 400; font-size: 1.7rem; margin: 0; }
+
+  /* ── SCRIPT SWITCH (Lotin / Кирилл) ── */
+  .script { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--paper); }
+  .script button {
+    font-family: var(--f-mono); font-size: .68rem; letter-spacing: .04em;
+    border: 0; background: transparent; padding: .3rem .65rem; border-radius: 999px; cursor: pointer; color: var(--ink-soft);
+  }
+  .script button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 
   /* ── COVER ── */
   .cover { padding-block: 4.5rem 3rem; display: grid; gap: 1.4rem; justify-items: start; position: relative; isolation: isolate; }
@@ -80,6 +91,7 @@
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 80%, transparent);
   }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; justify-self: stretch; }
   .star { width: 44px; height: 44px; color: var(--lapis); }
   .cover h1 {
     font-family: var(--f-display); font-weight: 400;
@@ -88,27 +100,50 @@
   }
   .cover .author { font-family: var(--f-display); font-size: 1.25rem; letter-spacing: .12em; text-transform: uppercase; margin: 0; }
   .cover .meta { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; }
-  .epigraph {
-    margin: .8rem 0 0; padding-left: 1rem; border-left: 2px solid var(--lapis);
-    font-style: italic; font-weight: 300; color: var(--ink-soft); line-height: 1.7;
-  }
-  .epigraph cite { display: block; margin-top: .3rem; font-style: normal; font-family: var(--f-mono); font-size: .7rem; letter-spacing: .1em; color: var(--muted); }
+  .daily { margin: .8rem 0 0; padding-left: 1rem; border-left: 2px solid var(--lapis); display: grid; gap: .35rem; }
+  .daily .eyebrow { color: var(--lapis); }
+  .daily blockquote { margin: 0; font-style: italic; font-weight: 300; color: var(--ink-soft); line-height: 1.7; font-size: 1.08rem; }
+  .daily a { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .08em; color: var(--muted); text-decoration: none; }
+  .daily a:hover { color: var(--lapis); }
   .cover-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: .6rem; }
   .btn {
     display: inline-flex; align-items: center; gap: .5rem;
     font-family: var(--f-mono); font-size: .78rem; letter-spacing: .06em;
     padding: .7rem 1.1rem; border: 1px solid var(--ink); background: transparent;
     text-decoration: none; cursor: pointer; border-radius: 2px;
-    transition: background .2s, color .2s;
+    transition: background .2s, color .2s, border-color .2s;
   }
   .btn.solid { background: var(--ink); color: var(--paper); }
   .btn:hover { background: var(--ink); color: var(--paper); }
   .btn.solid:hover { background: var(--lapis); border-color: var(--lapis); }
+  .btn.quiet { border-color: var(--rule); color: var(--ink-soft); }
+  .btn.quiet:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .btn[aria-pressed="true"] { background: var(--lapis); border-color: var(--lapis); color: var(--paper); }
+
+  /* ── ILHOM XARITASI ── */
+  .ilhom { border-top: 1px solid var(--rule); padding-block: 2rem 2.4rem; }
+  .ilhom p.sub { margin: .4rem 0 1.3rem; color: var(--ink-soft); font-size: .98rem; }
+  .map { display: grid; grid-template-columns: 2.4rem repeat(12, minmax(0, 1fr)); gap: 4px; }
+  .map .mh { font-family: var(--f-mono); font-size: .62rem; color: var(--muted); text-align: center; padding-bottom: 2px; }
+  .map .yl { font-family: var(--f-mono); font-size: .66rem; color: var(--muted); align-self: center; }
+  .cell {
+    min-height: 2.3rem; border-radius: 3px; background: var(--paper-2);
+    display: flex; flex-wrap: wrap; align-content: flex-end; justify-content: center; gap: 2px; padding: 4px 2px;
+  }
+  .cell.out { background: transparent; border: 1px dashed var(--rule); }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--lapis); display: block;
+    transition: transform .15s;
+  }
+  .dot:hover, .dot:focus-visible { transform: scale(1.6); }
+  .dot.read { background: transparent; box-shadow: inset 0 0 0 1.5px var(--lapis); }
+  .map-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 1rem; margin-top: .9rem; }
+  .legend { display: inline-flex; align-items: center; gap: .9rem; }
+  .legend span { display: inline-flex; align-items: center; gap: .35rem; }
 
   /* ── CONTENTS ── */
   .contents { padding-block: 1rem 3rem; border-top: 1px solid var(--rule); }
   .contents-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding-top: 2rem; }
-  .contents-head h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.7rem; margin: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin: 1.2rem 0 .6rem; }
   .chip {
     font-family: var(--f-mono); font-size: .72rem; letter-spacing: .04em;
@@ -128,18 +163,9 @@
   }
   .year h3 span { font-family: var(--f-mono); font-size: .7rem; color: var(--muted); letter-spacing: .08em; }
   .rows { list-style: none; margin: 0; padding: 0; }
-  .row {
-    display: flex; align-items: baseline; gap: .7rem;
-    padding: .62rem 0; text-decoration: none; position: relative;
-  }
-  .row .no {
-    font-family: var(--f-mono); font-size: .75rem; color: var(--muted);
-    min-width: 1.6rem; font-variant-numeric: tabular-nums; position: relative;
-  }
-  .row.read .no::after {
-    content: ""; position: absolute; left: -.75rem; top: .45em;
-    width: 5px; height: 5px; border-radius: 50%; background: var(--lapis);
-  }
+  .row { display: flex; align-items: baseline; gap: .7rem; padding: .62rem 0; text-decoration: none; position: relative; }
+  .row .no { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); min-width: 1.6rem; font-variant-numeric: tabular-nums; position: relative; }
+  .row.read .no::after { content: ""; position: absolute; left: -.75rem; top: .45em; width: 5px; height: 5px; border-radius: 50%; background: var(--lapis); }
   .row .first { min-width: 0; font-size: 1.05rem; transition: color .2s; }
   .row .lead { flex: 1 1 1.5rem; min-width: 1rem; border-bottom: 1px dotted var(--rule); transform: translateY(-.3em); }
   .row .date { font-family: var(--f-mono); font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -155,20 +181,31 @@
   .bar {
     position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
     background: var(--paper);
-    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-    padding-block: .9rem; border-bottom: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: center; gap: .8rem;
+    padding-block: .8rem; border-bottom: 1px solid var(--rule);
   }
-  .bar a { font-family: var(--f-mono); font-size: .78rem; letter-spacing: .06em; text-decoration: none; color: var(--ink-soft); }
+  .bar a { font-family: var(--f-mono); font-size: .78rem; letter-spacing: .06em; text-decoration: none; color: var(--ink-soft); white-space: nowrap; }
   .bar a:hover { color: var(--lapis); }
+  .bar .right { display: flex; align-items: center; gap: .8rem; }
   .bar .pos { font-family: var(--f-mono); font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-  .poem { padding-block: 3rem 2rem; }
-  .poem-head { display: grid; gap: .5rem; margin-bottom: 2.4rem; }
-  .poem-head .big {
-    font-family: var(--f-display); font-size: clamp(3.4rem, 14vw, 5rem); line-height: 1;
-    color: var(--lapis); font-variant-numeric: tabular-nums;
+  .poem { padding-block: 3rem 2rem; position: relative; isolation: isolate; }
+  .glow {
+    position: absolute; z-index: -1; pointer-events: none;
+    left: 50%; width: 140vw; margin-left: -70vw; top: 4rem; height: 80vh;
+    background: radial-gradient(ellipse 38% 42% at 50% 40%, var(--glow), transparent 72%);
+    animation: flicker 6s ease-in-out infinite;
   }
-  .poem-head .asterism { font-family: var(--f-display); letter-spacing: .6em; color: var(--muted); }
+  @keyframes flicker {
+    0%, 100% { opacity: .85; transform: scale(1); }
+    18% { opacity: 1; transform: scale(1.03); }
+    31% { opacity: .72; transform: scale(.99); }
+    47% { opacity: .95; transform: scale(1.01); }
+    63% { opacity: .78; transform: scale(.98); }
+    82% { opacity: 1; transform: scale(1.02); }
+  }
+  .poem-head { display: grid; gap: .5rem; margin-bottom: 1.8rem; }
+  .poem-head .big { font-family: var(--f-display); font-size: clamp(3.4rem, 14vw, 5rem); line-height: 1; color: var(--lapis); font-variant-numeric: tabular-nums; }
   .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .3rem; }
   .tag {
     font-family: var(--f-mono); font-size: .68rem; letter-spacing: .04em;
@@ -176,33 +213,58 @@
     border: none; cursor: pointer;
   }
   .tag:hover { text-decoration: underline; }
+  .tools { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2rem; }
 
   .text { font-size: clamp(1.12rem, 3.6vw, 1.32rem); line-height: 1.85; font-weight: 400; }
+  .text.slow { cursor: pointer; }
   .stanza { margin: 0 0 1.6em; }
   .line { display: block; padding-left: 1.4em; text-indent: -1.4em; }
+  .text.ink .line { animation: ink 1s cubic-bezier(.3,.6,.25,1) both; animation-delay: calc(var(--i) * 110ms + 150ms); }
+  @keyframes ink {
+    from { clip-path: inset(0 100% 0 0); opacity: .25; }
+    to { clip-path: inset(0 -2% 0 0); opacity: 1; }
+  }
+  .line.wait { display: none; }
+  .stanza:not(:has(.line:not(.wait))) { display: none; }
+  .line.appear { animation: appear .7s ease both; }
+  @keyframes appear { from { opacity: 0; transform: translateY(4px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+  .more { margin-top: .4rem; }
+  .slow-hint { font-family: var(--f-mono); font-size: .7rem; color: var(--muted); margin: 0 0 1.4rem; }
 
   .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 2.4rem; padding-top: 1.6rem; border-top: 1px solid var(--rule); }
-  .actions .btn[aria-pressed="true"] { background: var(--lapis); border-color: var(--lapis); color: var(--paper); }
   .note { font-family: var(--f-mono); font-size: .72rem; color: var(--lapis); min-height: 1.2em; margin-top: .6rem; }
 
+  /* ── IMAGE MAKER ── */
+  .maker { margin-top: 1.4rem; padding: 1.2rem; border: 1px solid var(--rule); border-radius: 4px; background: var(--paper-2); display: grid; gap: 1rem; }
+  .maker h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.25rem; margin: 0; }
+  .maker .group { display: grid; gap: .45rem; }
+  .maker .opts { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .maker .opt-stanza { text-align: left; font-family: var(--f-body); font-style: italic; font-size: .95rem; letter-spacing: 0; max-width: 100%; }
+  .preview-box { display: flex; justify-content: center; background: var(--paper); border-radius: 3px; padding: .8rem; }
+  .preview-box img { max-height: 70vh; max-width: 100%; width: auto; border-radius: 2px; box-shadow: 0 6px 24px rgba(0,0,0,.18); display: block; }
+  .maker .row-btns { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+  .maker small { font-family: var(--f-mono); font-size: .68rem; color: var(--muted); }
+
   .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding-block: 2rem 4rem; }
-  .pager a {
-    display: grid; gap: .3rem; text-decoration: none; padding: 1rem;
-    border: 1px solid var(--rule); border-radius: 2px; min-width: 0;
-    transition: border-color .2s, background .2s;
-  }
+  .pager a { display: grid; gap: .3rem; text-decoration: none; padding: 1rem; border: 1px solid var(--rule); border-radius: 2px; min-width: 0; transition: border-color .2s, background .2s; }
   .pager a:hover { border-color: var(--lapis); background: var(--lapis-wash); }
   .pager a.next { text-align: right; }
   .pager .t { font-style: italic; font-size: .98rem; overflow-wrap: anywhere; }
   .pager .ghost { visibility: hidden; }
   .hint { text-align: center; font-family: var(--f-mono); font-size: .68rem; color: var(--muted); padding-bottom: 2rem; }
 
+  @media (prefers-reduced-motion: reduce) {
+    .view, .glow, .text.ink .line, .line.appear { animation: none; }
+  }
   @media (max-width: 480px) {
     body { font-size: 17px; }
     .cover { padding-block: 3rem 2rem; }
     .pager { grid-template-columns: 1fr; }
     .pager a.next { text-align: left; }
     .row .first { font-size: 1rem; }
+    .map { grid-template-columns: 2rem repeat(12, minmax(0, 1fr)); gap: 3px; }
+    .dot { width: 6px; height: 6px; }
+    .bar .pos { display: none; }
   }
 </style>
 </head>
@@ -221,16 +283,11 @@
 </svg>
 
 <script>
-const BOOK = { title: "Inson", author: "Jaloliddin Komolov" };
+const BOOK = { title: "Inson", author: "Jaloliddin Komolov", site: "jaloliddin2033.github.io/sher-uchun" };
 
 const THEMES = {
-  iymon:   "Iymon",
-  inson:   "Inson",
-  qadar:   "Qadar",
-  vaqt:    "Vaqt",
-  sevgi:   "Sevgi",
-  jamiyat: "Jamiyat",
-  sher:    "She'r haqida"
+  iymon: "Iymon", inson: "Inson", qadar: "Qadar", vaqt: "Vaqt",
+  sevgi: "Sevgi", jamiyat: "Jamiyat", sher: "She'r haqida"
 };
 
 const POEMS = [
@@ -258,54 +315,126 @@ const POEMS = [
 ];
 
 const MONTHS = ["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"];
+const MONTH_INIT = ["Y","F","M","A","M","I","I","A","S","O","N","D"];
 
 POEMS.forEach((p, i) => {
   p.no = i + 1;
   const [d, m, y] = p.d.split(".");
   p.day = +d; p.month = +m; p.year = y;
-  p.first = p.text.trim().split("\n")[0].replace(/[,.;:!?)\s—-]+$/, "");
+  p.stanzas = p.text.trim().split(/\n\s*\n/).map(s => s.split("\n"));
+  p.first = p.stanzas[0][0].replace(/[,.;:!?)\s—-]+$/, "");
   p.longDate = `${+d}-${MONTHS[+m - 1]}, ${y}-yil`;
 });
 
 /* ── per-viewer storage (safe) ── */
-function load(key) { try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); } catch (e) { return new Set(); } }
-function store(key, set) { try { localStorage.setItem(key, JSON.stringify([...set])); } catch (e) {} }
-const read = load("inson-read");
-const saved = load("inson-saved");
-
+function loadSet(key) { try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); } catch (e) { return new Set(); } }
+function storeSet(key, set) { try { localStorage.setItem(key, JSON.stringify([...set])); } catch (e) {} }
+function loadVal(key, def) { try { return localStorage.getItem(key) ?? def; } catch (e) { return def; } }
+function storeVal(key, v) { try { localStorage.setItem(key, v); } catch (e) {} }
+const read = loadSet("inson-read");
+const saved = loadSet("inson-saved");
+let script = loadVal("inson-script", "lat");
+let slowMode = loadVal("inson-slow", "0") === "1";
 let filter = "all";
-const app = document.getElementById("app");
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* ── LOTIN → КИРИЛЛ ── */
+const SINGLE = { a:"а", b:"б", c:"ц", d:"д", e:"е", f:"ф", g:"г", h:"ҳ", i:"и", j:"ж", k:"к", l:"л", m:"м", n:"н", o:"о", p:"п", q:"қ", r:"р", s:"с", t:"т", u:"у", v:"в", w:"в", x:"х", y:"й", z:"з" };
+const isLat = ch => /[A-Za-z]/.test(ch || "");
+const isApos = ch => ch === "'" || ch === "’" || ch === "ʼ" || ch === "‘";
+function toCyr(s) {
+  let out = "", i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (!isLat(c)) {
+      if (isApos(c) && isLat(s[i - 1]) && isLat(s[i + 1])) { out += "ъ"; i++; continue; }
+      out += c; i++; continue;
+    }
+    const n1 = s[i + 1] || "", n2 = s[i + 2] || "";
+    const lc = c.toLowerCase(), l1 = n1.toLowerCase();
+    const prevLetter = isLat(s[i - 1]) || (isApos(s[i - 1]) && isLat(s[i - 2]));
+    let rep, len;
+    if (lc === "y" && l1 === "o" && isApos(n2)) { rep = "йў"; len = 3; }
+    else if (lc === "o" && isApos(n1)) { rep = "ў"; len = 2; }
+    else if (lc === "g" && isApos(n1)) { rep = "ғ"; len = 2; }
+    else if (lc === "s" && l1 === "h") { rep = "ш"; len = 2; }
+    else if (lc === "c" && l1 === "h") { rep = "ч"; len = 2; }
+    else if (lc === "y" && l1 === "o") { rep = "ё"; len = 2; }
+    else if (lc === "y" && l1 === "u") { rep = "ю"; len = 2; }
+    else if (lc === "y" && l1 === "a") { rep = "я"; len = 2; }
+    else if (lc === "y" && l1 === "e" && !prevLetter) { rep = "е"; len = 2; }
+    else if (lc === "e" && !prevLetter) { rep = "э"; len = 1; }
+    else { rep = SINGLE[lc] || c; len = 1; }
+    const src = s.substr(i, len).replace(/[^A-Za-z]/g, "");
+    const upper = c === c.toUpperCase();
+    const allUpper = src.length > 1 && src === src.toUpperCase();
+    if (allUpper) rep = rep.toUpperCase();
+    else if (upper) rep = rep[0].toUpperCase() + rep.slice(1);
+    out += rep; i += len;
+  }
+  return out;
+}
+const T = s => script === "cyr" ? toCyr(s) : s;
+
+function applyScript(root) {
+  if (script !== "cyr") return;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => n.parentElement && n.parentElement.closest("[data-keep]") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+  });
+  const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
+  nodes.forEach(n => { n.nodeValue = toCyr(n.nodeValue); });
+  root.querySelectorAll("[aria-label]").forEach(e => { if (!e.closest("[data-keep]")) e.setAttribute("aria-label", toCyr(e.getAttribute("aria-label"))); });
+}
+
+/* ── helpers ── */
 function el(tag, attrs = {}, ...kids) {
   const n = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
     if (k === "class") n.className = v;
     else if (k === "text") n.textContent = v;
+    else if (k === "hidden") n.hidden = true;
     else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
     else n.setAttribute(k, v);
   }
   kids.flat().forEach(c => c != null && n.append(c));
   return n;
 }
-
-function starIcon() {
+function svgUse(id, cls) {
   const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  s.setAttribute("class", "star"); s.setAttribute("aria-hidden", "true");
+  s.setAttribute("class", cls); s.setAttribute("aria-hidden", "true");
   const u = document.createElementNS("http://www.w3.org/2000/svg", "use");
-  u.setAttribute("href", "#star"); s.append(u);
+  u.setAttribute("href", "#" + id); s.append(u);
   return s;
 }
+const pad2 = n => String(n).padStart(2, "0");
 
-/* ── CONTENTS VIEW ── */
+function scriptSwitch() {
+  const set = v => { if (script === v) return; script = v; storeVal("inson-script", v); route({ keepScroll: true }); };
+  return el("div", { class: "script", role: "group", "aria-label": "Yozuv", "data-keep": "" },
+    el("button", { type: "button", "aria-pressed": String(script === "lat"), onclick: () => set("lat"), text: "Lotin" }),
+    el("button", { type: "button", "aria-pressed": String(script === "cyr"), onclick: () => set("cyr"), text: "Кирилл" })
+  );
+}
+
+/* ── KUN SATRI ── */
+function dailyLine() {
+  const now = new Date();
+  const dayIndex = Math.floor((now.getTime() - now.getTimezoneOffset() * 60000) / 86400000);
+  const p = POEMS[dayIndex % POEMS.length];
+  const st = p.stanzas[(dayIndex * 7) % p.stanzas.length];
+  const lines = st.length > 4 ? st.slice(0, 2) : st.length === 4 ? st.slice(0, 2) : st;
+  return { p, lines, label: `${now.getDate()}-${MONTHS[now.getMonth()]}` };
+}
+
+/* ── HOME VIEW ── */
 function renderHome() {
-  document.title = "Inson";
   const years = [...new Set(POEMS.map(p => p.year))];
-  const fav = POEMS[14];
-  const favLines = fav.text.split("\n").slice(2, 4);
+  const day = dailyLine();
 
   const cover = el("section", { class: "cover" },
     el("canvas", { class: "wind", "aria-hidden": "true" }),
-    starIcon(),
+    el("div", { class: "cover-top" }, svgUse("star", "star"), scriptSwitch()),
     el("div", { class: "eyebrow", text: "She'rlar to'plami" }),
     el("h1", { text: BOOK.title }),
     el("p", { class: "author", text: BOOK.author }),
@@ -314,26 +443,55 @@ function renderHome() {
       el("span", { class: "eyebrow", text: `${years[0]} — ${years[years.length - 1]}` }),
       el("span", { class: "eyebrow", text: `${read.size} / ${POEMS.length} o'qildi` })
     ),
-    el("blockquote", { class: "epigraph" },
-      ...favLines.map(l => el("span", { class: "line", text: l })),
-      el("cite", { text: `${fav.no}-she'r · ${fav.longDate}` })
+    el("div", { class: "daily" },
+      el("div", { class: "eyebrow", text: `Kun satri · ${day.label}` }),
+      el("blockquote", {}, day.lines.map(l => el("span", { class: "line", text: l }))),
+      el("a", { href: "#sher-" + day.p.no, text: `${day.p.no}-she'rni o'qish →` })
     ),
     el("div", { class: "cover-actions" },
       el("a", { class: "btn solid", href: "#sher-1", text: "O'qishni boshlash →" }),
-      el("button", { class: "btn", type: "button", id: "random", text: "Tasodifiy she'r", onclick: () => {
-        const r = 1 + Math.floor(Math.random() * POEMS.length);
-        location.hash = "sher-" + r;
+      el("button", { class: "btn", type: "button", text: "Tasodifiy she'r", onclick: () => {
+        location.hash = "sher-" + (1 + Math.floor(Math.random() * POEMS.length));
       }})
     )
   );
 
-  const list = el("div", { id: "list" });
-  const chips = el("div", { class: "chips", role: "group", "aria-label": "Mavzular" });
-  const head = el("div", { class: "contents-head" },
-    el("h2", { text: "Mundarija" }),
-    el("span", { class: "eyebrow", id: "count" })
+  /* inspiration map */
+  const first = POEMS[0], last = POEMS[POEMS.length - 1];
+  const map = el("div", { class: "map", role: "group", "aria-label": "Oylar bo'yicha she'rlar" });
+  map.append(el("span", {}));
+  MONTH_INIT.forEach((m, i) => map.append(el("span", { class: "mh", title: MONTHS[i], text: m })));
+  const counts = {};
+  years.forEach(y => {
+    map.append(el("span", { class: "yl", text: y }));
+    for (let m = 1; m <= 12; m++) {
+      const inMonth = POEMS.filter(p => p.year === y && p.month === m);
+      const key = y * 100 + m;
+      const out = key < (+first.year * 100 + first.month) || key > (+last.year * 100 + 12);
+      counts[`${y}-${m}`] = inMonth.length;
+      map.append(el("div", { class: "cell" + (out ? " out" : ""), title: `${MONTHS[m - 1]} ${y}: ${inMonth.length} ta she'r` },
+        inMonth.map(p => el("a", { class: "dot" + (read.has(p.no) ? " read" : ""), href: "#sher-" + p.no, "aria-label": `${p.no}-she'r, ${p.longDate}: ${p.first}`, title: `${p.no}. ${p.first}` }))
+      ));
+    }
+  });
+  const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  const [by, bm] = best[0].split("-");
+  const ilhom = el("section", { class: "ilhom", id: "ilhom" },
+    el("h2", { class: "section-title", text: "Ilhom xaritasi" }),
+    el("p", { class: "sub", text: "Har bir nuqta — bitta she'r, yozilgan oyida. Nuqtani bosib, she'rni oching." }),
+    map,
+    el("div", { class: "map-foot" },
+      el("span", { class: "eyebrow", text: `Eng serhosil oy: ${MONTHS[bm - 1]} ${by} — ${best[1]} ta` }),
+      el("span", { class: "legend eyebrow" },
+        el("span", {}, el("i", { class: "dot", "aria-hidden": "true" }), "o'qilmagan"),
+        el("span", {}, el("i", { class: "dot read", "aria-hidden": "true" }), "o'qilgan"))
+    )
   );
 
+  /* contents */
+  const list = el("div", { id: "list" });
+  const chips = el("div", { class: "chips", role: "group", "aria-label": "Mavzular" });
+  const count = el("span", { class: "eyebrow" });
   function chipList() {
     chips.innerHTML = "";
     const opts = [["all", "Barchasi", POEMS.length]];
@@ -342,216 +500,377 @@ function renderHome() {
     if (filter === "saved" && !saved.size) filter = "all";
     opts.forEach(([k, label, n]) => chips.append(
       el("button", { class: "chip", type: "button", "aria-pressed": String(filter === k), onclick: () => { filter = k; chipList(); fill(); } },
-        label, el("span", { class: "n", text: n }))
+        T(label), el("span", { class: "n", text: n }))
     ));
   }
-
   function fill() {
     list.innerHTML = "";
-    const shown = POEMS.filter(p =>
-      filter === "all" ? true : filter === "saved" ? saved.has(p.no) : p.th.includes(filter));
-    document.getElementById("count").textContent = `${shown.length} ta`;
-    if (!shown.length) { list.append(el("p", { class: "empty", text: "Bu bo'limda hozircha she'r yo'q." })); return; }
+    const shown = POEMS.filter(p => filter === "all" ? true : filter === "saved" ? saved.has(p.no) : p.th.includes(filter));
+    count.textContent = T(`${shown.length} ta`);
+    if (!shown.length) { list.append(el("p", { class: "empty", text: T("Bu bo'limda hozircha she'r yo'q.") })); return; }
     years.forEach(y => {
       const items = shown.filter(p => p.year === y);
       if (!items.length) return;
       list.append(el("section", { class: "year" },
-        el("h3", {}, y, el("span", { text: `${items.length} ta she'r` })),
+        el("h3", {}, y, el("span", { text: T(`${items.length} ta she'r`) })),
         el("ul", { class: "rows" }, items.map(p => el("li", {},
           el("a", { class: "row" + (read.has(p.no) ? " read" : ""), href: "#sher-" + p.no },
-            el("span", { class: "no", text: String(p.no).padStart(2, "0") }),
-            el("span", { class: "first", text: p.first }),
-            saved.has(p.no) ? el("span", { class: "saved", "aria-label": "saqlangan", text: "♥" }) : null,
+            el("span", { class: "no", text: pad2(p.no) }),
+            el("span", { class: "first", text: T(p.first) }),
+            saved.has(p.no) ? el("span", { class: "saved", "aria-label": T("saqlangan"), text: "♥" }) : null,
             el("span", { class: "lead", "aria-hidden": "true" }),
-            el("span", { class: "date", text: `${String(p.day).padStart(2,"0")}.${String(p.month).padStart(2,"0")}` })
+            el("span", { class: "date", text: `${pad2(p.day)}.${pad2(p.month)}` })
           )
         )))
       ));
     });
   }
-
-  const contents = el("section", { class: "contents", id: "mundarija" }, head, chips, list);
+  const contents = el("section", { class: "contents", id: "mundarija" },
+    el("div", { class: "contents-head" }, el("h2", { class: "section-title", text: "Mundarija" }), count),
+    chips, list);
 
   const about = el("section", { class: "about" },
     el("h2", { text: "To'plam haqida" }),
-    el("p", { text: `“${BOOK.title}” to'plamiga ${BOOK.author}ning ${years[0]}–${years[years.length-1]}-yillarda yozgan ${POEMS.length} ta she'ri kirgan.` }),
-    el("p", { text: "She'rlar yozilgan sanasi bo'yicha tartiblangan. Har birini alohida ochish, saqlash va havolasini do'stga yuborish mumkin." })
+    el("p", { text: `“${BOOK.title}” to'plamiga ${BOOK.author}ning ${years[0]}–${years[years.length - 1]}-yillarda yozgan ${POEMS.length} ta she'ri kirgan.` }),
+    el("p", { text: "She'rlar yozilgan sanasi bo'yicha tartiblangan. Har birini alohida ochish, sekin o'qish, saqlash, rasm qilib ulashish mumkin. Yozuvni yuqoridagi tugma orqali lotin yoki kirillga almashtiring." })
   );
 
-  app.replaceChildren(el("div", { class: "wrap view" }, cover, contents, about));
-  startWind(cover.querySelector(".wind"));
+  app.replaceChildren(el("div", { class: "wrap view" }, cover, ilhom, contents, about));
   chipList(); fill();
+  applyScript(app);
+  document.title = T("Inson");
+  startWind(cover.querySelector(".wind"));
 }
 
 /* ── POEM VIEW ── */
+let slowNext = null;
 function renderPoem(no) {
   const p = POEMS[no - 1];
   if (!p) { location.hash = ""; return; }
-  read.add(no); store("inson-read", read);
-  document.title = `${p.first} — Inson`;
+  read.add(no); storeSet("inson-read", read);
+  slowNext = null;
 
   const prev = POEMS[no - 2], next = POEMS[no];
-  const stanzas = p.text.split(/\n\s*\n/);
   const note = el("div", { class: "note", role: "status" });
 
-  const saveBtn = el("button", { class: "btn", type: "button", "aria-pressed": String(saved.has(no)) });
-  const setSave = () => { const on = saved.has(no); saveBtn.textContent = on ? "♥ Saqlangan" : "♡ Saqlash"; saveBtn.setAttribute("aria-pressed", String(on)); };
-  setSave();
-  saveBtn.addEventListener("click", () => {
-    saved.has(no) ? saved.delete(no) : saved.add(no);
-    store("inson-saved", saved); setSave();
+  /* text */
+  let li = 0;
+  const textEl = el("div", { class: "text" }, p.stanzas.map(st =>
+    el("p", { class: "stanza" }, st.map(l => el("span", { class: "line", style: `--i:${Math.min(li++, 24)}`, text: l })))
+  ));
+  const lines = [...textEl.querySelectorAll(".line")];
+  let shown = lines.length;
+  const moreBtn = el("button", { class: "btn quiet more", type: "button" });
+  const slowHint = el("p", { class: "slow-hint", text: "Sekin o'qish: matnni yoki pastdagi tugmani bosing — keyingi satr chiqadi." });
+
+  function paintSlow() {
+    textEl.classList.toggle("slow", slowMode);
+    lines.forEach((l, i) => l.classList.toggle("wait", slowMode && i >= shown));
+    moreBtn.hidden = !slowMode; slowHint.hidden = !slowMode;
+    moreBtn.textContent = shown < lines.length ? T(`Keyingi satr ↓   ${shown} / ${lines.length}`) : T("Qaytadan boshlash ↺");
+  }
+  function reveal() {
+    if (!slowMode) return;
+    if (shown >= lines.length) {
+      shown = 1; lines.forEach(l => l.classList.remove("appear"));
+      lines[0].classList.add("appear");
+      paintSlow(); textEl.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+      return;
+    }
+    const l = lines[shown]; shown++;
+    l.classList.remove("appear"); void l.offsetWidth; l.classList.add("appear");
+    paintSlow();
+    l.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+  }
+  slowNext = reveal;
+  textEl.addEventListener("click", () => { if (slowMode && !window.getSelection().toString()) reveal(); });
+  moreBtn.addEventListener("click", reveal);
+
+  const slowBtn = el("button", { class: "btn quiet", type: "button", "aria-pressed": String(slowMode), text: "Sekin o'qish" });
+  slowBtn.addEventListener("click", () => {
+    slowMode = !slowMode; storeVal("inson-slow", slowMode ? "1" : "0");
+    slowBtn.setAttribute("aria-pressed", String(slowMode));
+    textEl.classList.remove("ink");
+    shown = slowMode ? 1 : lines.length;
+    lines.forEach(l => l.classList.remove("appear"));
+    if (slowMode) lines[0].classList.add("appear");
+    paintSlow();
   });
 
-  function copy(text, done) {
-    const fallback = () => { note.textContent = "Nusxalab bo'lmadi. Matnni belgilab, qo'lda nusxalang."; };
-    try {
-      navigator.clipboard.writeText(text).then(() => { note.textContent = done; }, fallback);
-    } catch (e) { fallback(); }
-  }
+  if (slowMode) shown = 1; else if (!reduceMotion) textEl.classList.add("ink");
+
+  /* image maker */
+  const maker = makeImageMaker(p, note);
+  const makerBtn = el("button", { class: "btn quiet", type: "button", "aria-expanded": "false", "aria-controls": "maker", text: "Rasm yaratish" });
+  makerBtn.addEventListener("click", () => {
+    const open = maker.el.hidden;
+    maker.el.hidden = !open; makerBtn.setAttribute("aria-expanded", String(open));
+    if (open) { maker.render(); maker.el.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" }); }
+  });
+
+  /* save & copy */
+  const saveBtn = el("button", { class: "btn", type: "button" });
+  const setSave = () => { const on = saved.has(no); saveBtn.textContent = T(on ? "♥ Saqlangan" : "♡ Saqlash"); saveBtn.setAttribute("aria-pressed", String(on)); };
+  saveBtn.addEventListener("click", () => { saved.has(no) ? saved.delete(no) : saved.add(no); storeSet("inson-saved", saved); setSave(); });
+  setSave();
 
   const page = el("div", { class: "wrap view" },
     el("header", { class: "bar" },
       el("a", { href: "#mundarija", text: "← Mundarija" }),
-      el("span", { class: "pos", text: `${String(no).padStart(2,"0")} / ${POEMS.length}` })
+      el("div", { class: "right" }, scriptSwitch(), el("span", { class: "pos", text: `${pad2(no)} / ${POEMS.length}` }))
     ),
     el("article", { class: "poem" },
+      el("div", { class: "glow", "aria-hidden": "true" }),
       el("div", { class: "poem-head" },
-        el("div", { class: "big", text: String(no).padStart(2, "0") }),
+        el("div", { class: "big", text: pad2(no) }),
         el("div", { class: "eyebrow", text: p.longDate }),
         el("div", { class: "tags" }, p.th.map(t =>
           el("button", { class: "tag", type: "button", text: THEMES[t], onclick: () => { filter = t; location.hash = "mundarija"; } })))
       ),
-      el("h1", { class: "eyebrow", style: "position:absolute;left:-9999px", text: p.first }),
-      el("div", { class: "text" }, stanzas.map(s =>
-        el("p", { class: "stanza" }, s.split("\n").map(l => el("span", { class: "line", text: l })))
-      )),
+      el("h1", { style: "position:absolute;left:-9999px", text: p.first }),
+      el("div", { class: "tools" }, slowBtn, makerBtn),
+      slowHint,
+      textEl,
+      moreBtn,
+      maker.el,
       el("div", { class: "actions" },
         saveBtn,
         el("button", { class: "btn", type: "button", text: "Matnni nusxalash", onclick: () =>
-          copy(`${p.text}\n\n— ${BOOK.author}, ${p.longDate}`, "Matn nusxalandi.") }),
+          copy(`${T(p.text)}\n\n— ${T(BOOK.author)}, ${T(p.longDate)}`, T("Matn nusxalandi."), note) }),
         el("button", { class: "btn", type: "button", text: "Havolani nusxalash", onclick: () =>
-          copy(location.href, "Havola nusxalandi. Endi do'stingizga yuborishingiz mumkin.") })
+          copy(location.href, T("Havola nusxalandi. Endi do'stingizga yuborishingiz mumkin."), note) })
       ),
       note
     ),
     el("nav", { class: "pager", "aria-label": "She'rlar" },
-      prev ? el("a", { href: "#sher-" + prev.no },
-        el("span", { class: "eyebrow", text: "← Oldingi" }), el("span", { class: "t", text: prev.first }))
+      prev ? el("a", { href: "#sher-" + prev.no }, el("span", { class: "eyebrow", text: "← Oldingi" }), el("span", { class: "t", text: prev.first }))
         : el("span", { class: "ghost" }),
-      next ? el("a", { class: "next", href: "#sher-" + next.no },
-        el("span", { class: "eyebrow", text: "Keyingi →" }), el("span", { class: "t", text: next.first }))
-        : el("a", { class: "next", href: "#mundarija" },
-        el("span", { class: "eyebrow", text: "Oxiri" }), el("span", { class: "t", text: "Mundarijaga qaytish" }))
+      next ? el("a", { class: "next", href: "#sher-" + next.no }, el("span", { class: "eyebrow", text: "Keyingi →" }), el("span", { class: "t", text: next.first }))
+        : el("a", { class: "next", href: "#mundarija" }, el("span", { class: "eyebrow", text: "Oxiri" }), el("span", { class: "t", text: "Mundarijaga qaytish" }))
     ),
     el("p", { class: "hint", text: "Telefonda: chapga yoki o'ngga suring · Kompyuterda: ← → tugmalari" })
   );
   app.replaceChildren(page);
+  applyScript(app);
+  paintSlow();
+  document.title = `${T(p.first)} — ${T("Inson")}`;
 }
 
-/* ── ROUTER ── */
-function route() {
-  const h = location.hash.replace("#", "");
-  const m = h.match(/^sher-(\d+)$/);
-  if (m) { renderPoem(+m[1]); window.scrollTo(0, 0); }
-  else {
-    renderHome();
-    if (h === "mundarija") document.getElementById("mundarija").scrollIntoView();
-    else window.scrollTo(0, 0);
+function copy(text, done, note) {
+  const fallback = () => { note.textContent = T("Nusxalab bo'lmadi. Matnni belgilab, qo'lda nusxalang."); };
+  try { navigator.clipboard.writeText(text).then(() => { note.textContent = done; }, fallback); }
+  catch (e) { fallback(); }
+}
+
+/* ── IMAGE MAKER ── */
+function makeImageMaker(p, note) {
+  const total = p.stanzas.reduce((a, s) => a + s.length, 0);
+  const choices = p.stanzas.map((st, i) => ({ key: String(i), lines: st, label: st[0] + (st.length > 1 ? " …" : "") }));
+  if (p.stanzas.length > 1 && total <= 10) choices.unshift({ key: "all", whole: true, label: "Butun she'r" });
+  let sel = choices[0].key, fmt = "story", look = document.documentElement.matches("[data-theme=dark]") || (!document.documentElement.matches("[data-theme=light]") && matchMedia("(prefers-color-scheme: dark)").matches) ? "night" : "paper";
+  let url = null;
+
+  const img = el("img", { alt: "She'r rasmi" });
+  const stanzaOpts = el("div", { class: "opts" });
+  const fmtOpts = el("div", { class: "opts" });
+  const lookOpts = el("div", { class: "opts" });
+  const dl = el("button", { class: "btn solid", type: "button", text: "Yuklab olish" });
+  const box = el("section", { class: "maker", id: "maker", hidden: true },
+    el("h2", { text: "She'rdan rasm" }),
+    el("div", { class: "group" }, el("span", { class: "eyebrow", text: "Qaysi band" }), stanzaOpts),
+    el("div", { class: "group" }, el("span", { class: "eyebrow", text: "O'lcham" }), fmtOpts),
+    el("div", { class: "group" }, el("span", { class: "eyebrow", text: "Ko'rinish" }), lookOpts),
+    el("div", { class: "preview-box" }, img),
+    el("div", { class: "row-btns" }, dl, el("small", { text: "Telefonda rasmni bosib turing va «Saqlash»ni tanlang." }))
+  );
+
+  function chipsFor(container, items, get, set, extraClass) {
+    container.innerHTML = "";
+    items.forEach(([k, label]) => container.append(el("button", {
+      class: "chip" + (extraClass ? " " + extraClass : ""), type: "button", "aria-pressed": String(get() === k),
+      text: T(label), onclick: () => { set(k); paintChips(); render(); }
+    })));
   }
-}
-function current() { const m = location.hash.match(/^#sher-(\d+)$/); return m ? +m[1] : 0; }
-function go(dir) {
-  const n = current(); if (!n) return;
-  const t = n + dir; if (t >= 1 && t <= POEMS.length) location.hash = "sher-" + t;
+  function paintChips() {
+    chipsFor(stanzaOpts, choices.map(c => [c.key, c.label]), () => sel, v => sel = v, "opt-stanza");
+    chipsFor(fmtOpts, [["story", "Story · 9:16"], ["square", "Kvadrat · 1:1"]], () => fmt, v => fmt = v);
+    chipsFor(lookOpts, [["night", "Kecha"], ["paper", "Qog'oz"]], () => look, v => look = v);
+  }
+  paintChips();
+
+  let seq = 0;
+  async function render() {
+    const my = ++seq;
+    const ch = choices.find(c => c.key === sel);
+    const stanzas = ch.whole ? p.stanzas : [ch.lines];
+    const canvas = await drawCard(p, stanzas, fmt, look);
+    if (my !== seq) return;
+    canvas.toBlob(b => {
+      if (!b || my !== seq) return;
+      if (url) URL.revokeObjectURL(url);
+      url = URL.createObjectURL(b);
+      img.src = url;
+    }, "image/png");
+  }
+  dl.addEventListener("click", () => {
+    if (!url) return;
+    try {
+      const a = el("a", { href: url, download: `inson-${pad2(p.no)}-${fmt}.png` });
+      document.body.append(a); a.click(); a.remove();
+      note.textContent = T("Agar yuklanmasa, rasmni bosib turib saqlang.");
+    } catch (e) { note.textContent = T("Rasmni bosib turib saqlang."); }
+  });
+  return { el: box, render };
 }
 
-window.addEventListener("hashchange", route);
-document.addEventListener("keydown", e => {
-  if (e.target.closest("input, textarea")) return;
-  if (e.key === "ArrowLeft") go(-1);
-  if (e.key === "ArrowRight") go(1);
-  if (e.key === "Escape" && current()) location.hash = "mundarija";
-});
-let tx = 0, ty = 0;
-document.addEventListener("touchstart", e => { tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, { passive: true });
-document.addEventListener("touchend", e => {
-  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
-  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
-}, { passive: true });
+const QALAM = "M24 3 L36 26 L31 37 L17 37 L12 26 Z";
+async function drawCard(p, stanzas, fmt, look) {
+  try {
+    await Promise.all([
+      document.fonts.load('400 40px "Spectral"'), document.fonts.load('italic 300 40px "Spectral"'),
+      document.fonts.load('400 40px "Marcellus"'), document.fonts.load('400 20px "IBM Plex Mono"')
+    ]);
+  } catch (e) {}
+  const W = 1080, H = fmt === "story" ? 1920 : 1080;
+  const C = look === "night"
+    ? { bg: "#121620", ink: "#dfe4ea", soft: "#aab2c0", muted: "#737c8d", acc: "#62b8c4", glow: "rgba(255,176,92,0.10)" }
+    : { bg: "#eceee8", ink: "#1d2740", soft: "#4d5670", muted: "#7f8697", acc: "#1b6a78", glow: "rgba(27,106,120,0.06)" };
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d");
+  ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W / 2, H * .45, 10, W / 2, H * .45, H * .55);
+  g.addColorStop(0, C.glow); g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 
-/* ── WIND (shabboda) ── */
+  // wind streaks (seeded by poem number)
+  let seed = p.no * 9301 + 49297;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  ctx.strokeStyle = C.muted; ctx.lineCap = "round";
+  for (let k = 0; k < 7; k++) {
+    const y = (k < 4 ? H * .05 + rnd() * H * .12 : H * .80 + rnd() * H * .1);
+    const x0 = rnd() * W * .6 - W * .1, len = W * (.25 + rnd() * .35), amp = 6 + rnd() * 10, fr = .006 + rnd() * .008, ph = rnd() * 6;
+    for (let i = 0; i < 30; i++) {
+      const t1 = i / 30, t2 = (i + 1) / 30;
+      ctx.globalAlpha = .35 * Math.sin(Math.PI * t1);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(x0 + t1 * len, y + Math.sin((x0 + t1 * len) * fr + ph) * amp);
+      ctx.lineTo(x0 + t2 * len, y + Math.sin((x0 + t2 * len) * fr + ph) * amp);
+      ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  const M = 96;
+  const top = fmt === "story" ? 230 : 120;
+  // emblem + title
+  const k = fmt === "story" ? 2.2 : 1.7;
+  ctx.save(); ctx.translate(M - 12 * k, top - 46 * k * .5); ctx.scale(k, k);
+  ctx.strokeStyle = C.acc; ctx.lineWidth = 1.6; ctx.lineJoin = "round"; ctx.lineCap = "round";
+  ctx.stroke(new Path2D(QALAM));
+  ctx.beginPath(); ctx.moveTo(24, 3); ctx.lineTo(24, 23); ctx.stroke();
+  ctx.beginPath(); ctx.arc(24, 26.5, 2.6, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeRect(17, 37, 14, 8);
+  ctx.restore();
+  ctx.fillStyle = C.ink; ctx.textBaseline = "alphabetic";
+  ctx.font = `400 ${fmt === "story" ? 52 : 42}px "Marcellus", Georgia, serif`;
+  ctx.fillText(T("Inson"), M + 30 * k, top + 8 * k);
+
+  // poem text fit
+  const areaTop = fmt === "story" ? 420 : 250;
+  const areaBot = fmt === "story" ? H - 400 : H - 230;
+  const maxW = W - M * 2;
+  let size = fmt === "story" ? 66 : 52, rows;
+  const layout = s => {
+    ctx.font = `400 ${s}px "Spectral", Georgia, serif`;
+    const out = [];
+    stanzas.forEach((st, si) => {
+      if (si) out.push(null);
+      st.forEach(line => {
+        const words = T(line).split(" "); let cur = "";
+        words.forEach(w => {
+          const t = cur ? cur + " " + w : w;
+          if (ctx.measureText(t).width > maxW && cur) { out.push(cur); cur = "   " + w; } else cur = t;
+        });
+        out.push(cur);
+      });
+    });
+    return out;
+  };
+  const heightOf = (r, s) => r.reduce((h, x) => h + (x === null ? s * .8 : s * 1.55), 0);
+  for (; size >= 30; size -= 2) { rows = layout(size); if (heightOf(rows, size) <= areaBot - areaTop) break; }
+  ctx.font = `400 ${size}px "Spectral", Georgia, serif`;
+  let y = areaTop + ((areaBot - areaTop) - heightOf(rows, size)) / 2 + size;
+  ctx.fillStyle = C.ink;
+  rows.forEach(r => { if (r === null) { y += size * .8; return; } ctx.fillText(r, M, y); y += size * 1.55; });
+
+  // footer
+  const fy = fmt === "story" ? H - 250 : H - 150;
+  ctx.fillStyle = C.acc; ctx.fillRect(M, fy - 60, 64, 3);
+  ctx.fillStyle = C.ink; ctx.font = `400 ${fmt === "story" ? 38 : 32}px "Marcellus", Georgia, serif`;
+  ctx.fillText(T(BOOK.author).toUpperCase(), M, fy);
+  ctx.fillStyle = C.muted; ctx.font = `400 ${fmt === "story" ? 27 : 23}px "IBM Plex Mono", monospace`;
+  ctx.fillText(T(p.longDate), M, fy + (fmt === "story" ? 50 : 42));
+  ctx.fillStyle = C.acc;
+  ctx.fillText(BOOK.site, M, fy + (fmt === "story" ? 96 : 80));
+  return cv;
+}
+
+/* ── WIND (shabboda) on the cover ── */
 function startWind(cv) {
   const ctx = cv.getContext("2d");
-  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let W = 0, H = 0, dpr = 1, streaks = [], motes = [], visible = true, t0 = performance.now();
+  const still = reduceMotion;
+  let W = 0, H = 0, dpr = 1, streaks = [], motes = [], visible = true;
+  const t0 = performance.now();
   const rnd = (a, b) => a + Math.random() * (b - a);
-
-  function colors() {
+  const colors = () => {
     const cs = getComputedStyle(document.documentElement);
     return { line: cs.getPropertyValue("--muted").trim() || "#7f8697", dot: cs.getPropertyValue("--lapis").trim() || "#1b6a78" };
-  }
+  };
   let col = colors();
-
-  function newStreak(anywhere) {
-    const len = rnd(W * .18, W * .45);
-    return { x: anywhere ? rnd(-len, W) : rnd(-len * 1.6, -len), y: rnd(H * .08, H * .92), len,
-      speed: rnd(.35, 1.0), amp: rnd(4, 16), freq: rnd(.006, .014), ph: rnd(0, 6.28), w: rnd(.6, 1.3), a: rnd(.18, .45) };
-  }
-  function newMote(anywhere) {
-    return { x: anywhere ? rnd(0, W) : rnd(-40, -5), y: rnd(0, H), r: rnd(.8, 2), sp: rnd(.6, 1.6), ph: rnd(0, 6.28), a: rnd(.25, .6) };
-  }
+  const newStreak = any => { const len = rnd(W * .18, W * .45);
+    return { x: any ? rnd(-len, W) : rnd(-len * 1.6, -len), y: rnd(H * .08, H * .92), len, speed: rnd(.35, 1), amp: rnd(4, 16), freq: rnd(.006, .014), ph: rnd(0, 6.28), w: rnd(.6, 1.3), a: rnd(.18, .45) }; };
+  const newMote = any => ({ x: any ? rnd(0, W) : rnd(-40, -5), y: rnd(0, H), r: rnd(.8, 2), sp: rnd(.6, 1.6), ph: rnd(0, 6.28), a: rnd(.25, .6) });
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = cv.clientWidth; H = cv.clientHeight;
-    cv.width = W * dpr; cv.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const n = Math.round(Math.max(7, Math.min(16, W / 60)));
     streaks = Array.from({ length: n }, () => newStreak(true));
     motes = Array.from({ length: Math.round(n * 1.4) }, () => newMote(true));
   }
-
   function frame(now) {
     if (!cv.isConnected) return;
     const time = (now - t0) / 1000;
-    // gusts: slow swell plus an occasional stronger breath
     const gust = .55 + .3 * Math.sin(time * .35) + .35 * Math.max(0, Math.sin(time * .9 + 1.3)) ** 6;
-    ctx.clearRect(0, 0, W, H);
-    ctx.lineCap = "round";
-    ctx.strokeStyle = col.line;
+    ctx.clearRect(0, 0, W, H); ctx.lineCap = "round"; ctx.strokeStyle = col.line;
     for (const s of streaks) {
       if (!still) s.x += s.speed * gust * 2.2;
-      const steps = 28;
-      for (let i = 0; i < steps; i++) {
-        const t1 = i / steps, t2 = (i + 1) / steps;
-        const x1 = s.x + t1 * s.len, x2 = s.x + t2 * s.len;
-        const y1 = s.y + Math.sin(x1 * s.freq + s.ph + time * .8) * s.amp * gust;
-        const y2 = s.y + Math.sin(x2 * s.freq + s.ph + time * .8) * s.amp * gust;
-        ctx.globalAlpha = s.a * Math.sin(Math.PI * t1) * Math.min(1, gust);
-        ctx.lineWidth = s.w;
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      for (let i = 0; i < 28; i++) {
+        const t1 = i / 28, t2 = (i + 1) / 28, x1 = s.x + t1 * s.len, x2 = s.x + t2 * s.len;
+        ctx.globalAlpha = s.a * Math.sin(Math.PI * t1) * Math.min(1, gust); ctx.lineWidth = s.w;
+        ctx.beginPath();
+        ctx.moveTo(x1, s.y + Math.sin(x1 * s.freq + s.ph + time * .8) * s.amp * gust);
+        ctx.lineTo(x2, s.y + Math.sin(x2 * s.freq + s.ph + time * .8) * s.amp * gust);
+        ctx.stroke();
       }
       if (s.x > W + 20) Object.assign(s, newStreak(false));
     }
     ctx.fillStyle = col.dot;
     for (const m of motes) {
       if (!still) { m.x += m.sp * gust * 2.6; m.y += Math.sin(time * 1.4 + m.ph) * .35; }
-      ctx.globalAlpha = m.a;
-      ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = m.a; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill();
       if (m.x > W + 10) Object.assign(m, newMote(false));
     }
     ctx.globalAlpha = 1;
     if (!still && visible) requestAnimationFrame(frame);
   }
-
-  resize();
-  frame(performance.now());
-  const ro = new ResizeObserver(() => { if (cv.isConnected) { resize(); if (still) frame(performance.now()); } });
-  ro.observe(cv);
-  const io = new IntersectionObserver(([e]) => {
+  resize(); frame(performance.now());
+  new ResizeObserver(() => { if (cv.isConnected) { resize(); if (still) frame(performance.now()); } }).observe(cv);
+  new IntersectionObserver(([e]) => {
     const was = visible; visible = e.isIntersecting && !document.hidden;
     if (visible && !was && !still) requestAnimationFrame(frame);
-  });
-  io.observe(cv);
+  }).observe(cv);
   document.addEventListener("visibilitychange", () => {
     const was = visible; visible = !document.hidden;
     if (visible && !was && !still && cv.isConnected) requestAnimationFrame(frame);
@@ -559,6 +878,35 @@ function startWind(cv) {
   const mq = window.matchMedia("(prefers-color-scheme: dark)");
   mq.addEventListener && mq.addEventListener("change", () => { col = colors(); });
 }
+
+/* ── ROUTER ── */
+function route(opts = {}) {
+  const y = window.scrollY;
+  const h = location.hash.replace("#", "");
+  const m = h.match(/^sher-(\d+)$/);
+  if (m) renderPoem(+m[1]); else renderHome();
+  if (opts.keepScroll) { window.scrollTo(0, y); return; }
+  if (!m && (h === "mundarija" || h === "ilhom")) document.getElementById(h).scrollIntoView();
+  else window.scrollTo(0, 0);
+}
+function current() { const m = location.hash.match(/^#sher-(\d+)$/); return m ? +m[1] : 0; }
+function go(dir) { const n = current(); if (!n) return; const t = n + dir; if (t >= 1 && t <= POEMS.length) location.hash = "sher-" + t; }
+
+window.addEventListener("hashchange", () => route());
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input, textarea")) return;
+  if (e.key === "ArrowLeft") go(-1);
+  else if (e.key === "ArrowRight") go(1);
+  else if (e.key === "Escape" && current()) location.hash = "mundarija";
+  else if ((e.key === "ArrowDown" || e.key === " ") && current() && slowMode && slowNext && !e.target.closest("button, a")) { e.preventDefault(); slowNext(); }
+});
+let tx = 0, ty = 0;
+document.addEventListener("touchstart", e => { tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, { passive: true });
+document.addEventListener("touchend", e => {
+  if (e.target.closest && e.target.closest(".maker")) return;
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+}, { passive: true });
 
 route();
 </script>

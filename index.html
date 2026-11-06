@@ -408,6 +408,40 @@
   .trek-b { right: 0; }
   .trek.done .trek-b { color: var(--lapis); }
 
+  /* ── BOG': skameyka, daraxt, kaptarlar ── */
+  .park {
+    position: fixed; z-index: 20; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: grid; justify-items: end; pointer-events: none; transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .35s;
+  }
+  .park-svg { width: 94px; height: auto; display: block; overflow: visible; margin-bottom: -1px; position: relative; }
+  .park .fab { position: static; pointer-events: auto; }
+  .park.away { opacity: 0; transform: translateY(24px); }
+  .park.hide { transform: translateY(calc(100% + 30px)); }
+  .park.away *, .park.hide * { pointer-events: none !important; }
+  .park-hit { fill: transparent; pointer-events: all; cursor: pointer; }
+  .pk-ground { stroke: var(--rule); stroke-width: 1; }
+  .pk-grass { stroke: var(--muted); stroke-width: .5; fill: none; stroke-linecap: round; }
+  .pk-trunk { stroke: var(--ink-soft); stroke-width: 2.6; fill: none; stroke-linecap: round; }
+  .pk-branch { stroke: var(--ink-soft); stroke-width: 1.1; fill: none; stroke-linecap: round; }
+  .pk-leaf-a { fill: var(--lapis); opacity: .9; }
+  .pk-leaf-b { fill: var(--lapis); opacity: .72; }
+  .pk-leaf-c { fill: var(--lapis); opacity: .55; }
+  .pk-leaf-fall { fill: var(--lapis); }
+  .pk-bench { fill: var(--ink-soft); }
+  .pk-lamp-on { fill: #f7cf6a; }
+  .pk-lamp-off { fill: var(--paper-2); stroke: var(--ink-soft); stroke-width: .6; }
+  .pk-crumb { fill: #d9b779; }
+  .pg-body { fill: #8b91a0; }
+  .pg-dark { fill: #626878; }
+  .pg-head { fill: #6f7686; }
+  .pg-neck { fill: var(--lapis); opacity: .75; }
+  .pg-beak { fill: #c9a27a; }
+  .pg-eye { fill: #f4efe2; }
+  .pg-legs { stroke: #c97a6a; stroke-width: .7; fill: none; stroke-linecap: round; }
+  .toast { top: calc(72px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translate(-50%, -16px); }
+  .toast.on { transform: translate(-50%, 0); }
+
+
   .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding-block: 2rem 4rem; }
   .pager a { display: grid; gap: .3rem; text-decoration: none; padding: 1rem; border: 1px solid var(--rule); border-radius: 2px; min-width: 0; transition: border-color .2s, background .2s; }
   .pager a:hover { border-color: var(--lapis); background: var(--lapis-wash); }
@@ -1630,15 +1664,19 @@ function drawPlane(g) {
 }
 /* Xabar yuborilganda: tugmadan qog'oz samolyotcha uchib, "Inson" derazasi tomon ketadi */
 function flyPlane(src) {
-  pendingPlanes = Math.min(pendingPlanes + 1, 3);
-  if (reduceMotion) return;
+  const tgt = park.target();
+  if (!tgt) pendingPlanes = Math.min(pendingPlanes + 1, 3);
+  if (reduceMotion) { if (tgt) park.catchPlane(); return; }
   const s = sv("svg", { class: "plane", viewBox: "-16 -12 32 24", width: "40", height: "30" });
   drawPlane(s);
   document.body.append(s);
   const r = src && src.isConnected ? src.getBoundingClientRect() : null;
   const X = [r && r.width ? r.left + r.width / 2 : innerWidth / 2], Y = [r && r.width ? r.top + r.height / 2 : innerHeight * .7];
-  X.push(X[0] + Math.min(180, innerWidth * .3), X[0] + Math.min(220, innerWidth * .4), innerWidth * .18);
-  Y.push(Y[0] + 30, Y[0] - innerHeight * .45, -70);
+  if (tgt) { X.push(X[0] + 90, tgt.x - 70, tgt.x); Y.push(Y[0] - 160, tgt.y - 110, tgt.y); }
+  else {
+    X.push(X[0] + Math.min(180, innerWidth * .3), X[0] + Math.min(220, innerWidth * .4), innerWidth * .18);
+    Y.push(Y[0] + 30, Y[0] - innerHeight * .45, -70);
+  }
   const t0 = performance.now(), D = 1700;
   const step = now => {
     const p = clamp01((now - t0) / D), e = easeInOut(p);
@@ -1646,7 +1684,7 @@ function flyPlane(src) {
     const a = Math.atan2(dcubic(e, ...Y), dcubic(e, ...X)) * 180 / Math.PI;
     s.style.transform = `translate(${x - 20}px, ${y - 15}px) rotate(${a.toFixed(1)}deg) scale(${(1 - e * .35).toFixed(3)})`;
     s.style.opacity = p > .8 ? String((1 - p) / .2) : "1";
-    if (p < 1) requestAnimationFrame(step); else s.remove();
+    if (p < 1) requestAnimationFrame(step); else { s.remove(); if (tgt) park.catchPlane(); }
   };
   requestAnimationFrame(step);
 }
@@ -1730,6 +1768,296 @@ function makeTrek() {
     return () => cancelAnimationFrame(raf);
   }
   return { el: box, start };
+}
+
+/* ── BOG': skameyka, daraxt, kaptarlar. Muqova ko'rinmasa, yigit uydan chiqib skameykaga o'tiradi ── */
+const gustAt = s => .55 + .3 * Math.sin(s * .35) + .35 * Math.max(0, Math.sin(s * .9 + 1.3)) ** 6;
+
+/* Skameykada kitob o'qiyotgan yigit: 100 birlik, kestirib o'tirgan nuqta 0,0 */
+function drawSitter(g, legLen = 82) {
+  sv("path", { d: "M-8 -2 H24 V9 H-8 Z", class: "sc-ink" }, g);
+  sv("path", { d: `M16 2 H25 L26 ${legLen - 6} H17 Z`, class: "sc-ink" }, g);
+  sv("path", { d: `M16 ${legLen - 7} H32 Q35 ${legLen - 4} 33 ${legLen} H16 Z`, class: "sc-ink" }, g);
+  sv("path", { d: "M-12 2 L-10 -38 Q0 -43 9 -38 L12 2 Z", class: "sc-ink" }, g);
+  sv("path", { d: "M-3 -40 H4 L.5 -29 Z", class: "sc-paper" }, g);
+  sv("path", { d: "M-.6 -37 H1.4 L1.9 -27 L.4 -24.5 L-1.1 -27 Z", class: "sc-ink" }, g);
+  sv("rect", { x: -3, y: -47, width: 7, height: 8, class: "sc-ink" }, g);
+  const head = sv("g", {}, g);
+  sv("circle", { cx: 1, cy: -54, r: 10, class: "sc-ink" }, head);
+  const arm = sv("g", {}, g);
+  sv("path", { d: "M3 -36 L10 -37 L19 -16 L31 -22 L33 -16 L16 -7 Z", class: "sc-ink" }, arm);
+  const book = sv("g", { transform: "translate(30 -22) rotate(-25)" }, arm);
+  sv("rect", { x: -1, y: -13, width: 14, height: 13, rx: 1, class: "sc-lapis" }, book);
+  const page = sv("rect", { x: 6, y: -12, width: 6.5, height: 11, class: "sc-paper" }, book);
+  return { head, arm, page };
+}
+
+/* Kaptar: oyoqlari 0 da, o'ngga qaragan, ~18 birlik */
+function drawPigeon(g) {
+  const body = sv("g", {}, g);
+  sv("path", { d: "M-6 -5 L-12 -3.2 L-6 -2.6 Z", class: "pg-dark" }, body);
+  sv("ellipse", { cx: -.5, cy: -5, rx: 6.3, ry: 3.9, class: "pg-body" }, body);
+  const wing = sv("path", { d: "M-5.5 -6.5 Q0 -9 3.5 -6 Q-.5 -3.6 -6 -4.6 Z", class: "pg-dark" }, body);
+  const flap = sv("path", { d: "M-4 -6.5 L-1 -17 L4 -7 Z", class: "pg-dark" }, body);
+  flap.style.display = "none";
+  const head = sv("g", {}, body);
+  sv("path", { d: "M2.5 -6.5 Q4 -9 6 -9.5 L7 -7.5 Q5 -5 3 -4.5 Z", class: "pg-neck" }, head);
+  sv("circle", { cx: 6, cy: -10.3, r: 2.5, class: "pg-head" }, head);
+  sv("path", { d: "M8.2 -10.6 L10 -10 L8.2 -9.5 Z", class: "pg-beak" }, head);
+  sv("circle", { cx: 6.8, cy: -10.8, r: .5, class: "pg-eye" }, head);
+  const legs = sv("path", { d: "M-1 -1.5 L-1.4 0 M1.3 -1.5 L1.6 0", class: "pg-legs" }, g);
+  return { body, head, wing, flap, legs };
+}
+
+function makePark() {
+  const GY = 50, K = .35, PS = .55;
+  const night = (() => { const h = new Date().getHours(); return h >= 18 || h < 6; })();
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const svg = sv("svg", { class: "park-svg", viewBox: "0 0 120 52" });
+  const defs = sv("defs", {}, svg);
+  const lg = sv("radialGradient", { id: "pkLamp" }, defs);
+  sv("stop", { offset: "0", "stop-color": "#f7cf6a", "stop-opacity": ".6" }, lg);
+  sv("stop", { offset: "1", "stop-color": "#f7cf6a", "stop-opacity": "0" }, lg);
+
+  /* yer, o't, fonar */
+  sv("path", { d: "M8 50 l.7 -2.4 l.6 2.4 M64 50 l.6 -2 l.7 2 M116 50 l.6 -2.2 l.6 2.2", class: "pk-grass" }, svg);
+
+  /* daraxt */
+  sv("path", { d: "M104 50 C103.5 42 104.5 35 102.5 27", class: "pk-trunk" }, svg);
+  sv("path", { d: "M103 36 C99 34.5 95 34 88 33.6 M103.5 32 C107 30.5 110 29.5 114 28.5", class: "pk-branch" }, svg);
+  const crown = [];
+  [[102.5, 19, 10.5, "a"], [94, 25, 7.5, "b"], [111, 24.5, 7.5, "c"]].forEach(([cx, cy, r, t], i) => {
+    const g = sv("g", {}, svg);
+    sv("circle", { cx, cy, r, class: "pk-leaf-" + t }, g);
+    crown.push({ g, i, cx, cy });
+  });
+
+  /* skameyka */
+  [[20.5, 32.8, 35, 1.2], [20.5, 35.6, 35, 1.2], [23, 32.8, 1.2, 8.4], [52, 32.8, 1.2, 8.4], [19, 41, 38, 1.6], [21, 42.4, 1.3, 7.6], [53.7, 42.4, 1.3, 7.6]]
+    .forEach(([x, y, w, h]) => sv("rect", { x, y, width: w, height: h, rx: .4, class: "pk-bench" }, svg));
+
+  const leafLayer = sv("g", {}, svg), crumbLayer = sv("g", {}, svg);
+
+  /* yigit: o'tirgan va yurgan holati */
+  const sitG = sv("g", { transform: `translate(36 41) scale(${K})`, opacity: "0" }, svg);
+  const sitter = drawSitter(sitG, (GY - 41) / K);
+  const walkG = sv("g", { opacity: "0" }, svg);
+  const walker = drawWalker(walkG);
+  const boyHit = sv("rect", { x: 27, y: 15, width: 24, height: 35, class: "park-hit" }, svg);
+  sv("title", {}, boyHit).textContent = "Muallifga yozish";
+  boyHit.addEventListener("click", () => { if (B.mode === "sit") openSheet(); });
+  boyHit.style.display = "none";
+
+  /* kaptarlar */
+  const perches = [{ x: 89, y: 33.3 }, { x: 102.5, y: 8.6 }, { x: 113, y: 28.3 }, { x: 24, y: 32.8 }, { x: 52.5, y: 32.8 }]
+    .map(p => Object.assign(p, { occ: null }));
+  const pgLayer = sv("g", {}, svg);
+  const birds = [];
+  [{ x: 72 }, { perch: 4 }, { perch: 1 }].forEach((st, i) => {
+    const g = sv("g", {}, pgLayer);
+    const parts = drawPigeon(g);
+    const hit = sv("circle", { cx: 0, cy: -6, r: 16, class: "park-hit" }, g);
+    const b = { g, parts, x: st.x || 0, y: GY, dir: i % 2 ? -1 : 1, mode: "ground", act: "idle",
+      until: performance.now() + rnd(500, 3000), fly: null, perch: null, tx: 0, crumb: null, ph: rnd(0, 6) };
+    if (st.perch != null) { const pr = perches[st.perch]; pr.occ = b; b.perch = pr; b.mode = "perch"; b.x = pr.x; b.y = pr.y; }
+    hit.addEventListener("click", e => { e.stopPropagation(); scare(b, performance.now()); });
+    birds.push(b);
+  });
+
+  const freePerch = avoid => { const f = perches.filter(p => !p.occ && p !== avoid); return f.length ? f[Math.floor(Math.random() * f.length)] : null; };
+  const groundSpot = near => ({ x: near != null ? Math.max(4, Math.min(116, near + rnd(-8, 8))) : rnd(60, 116), y: GY });
+  function flyTo(b, now, tgt) {
+    if (b.perch) { b.perch.occ = null; b.perch = null; }
+    if (b.crumb) { b.crumb.taken = false; b.crumb = null; }
+    if (tgt.perch) tgt.perch.occ = b;
+    const dist = Math.hypot(tgt.x - b.x, tgt.y - b.y);
+    b.fly = { x0: b.x, y0: b.y, x1: tgt.x, y1: tgt.y, perch: tgt.perch || null, t0: now, dur: 420 + dist * 16, arc: 7 + dist * .3 };
+    b.mode = "fly"; b.dir = tgt.x >= b.x ? 1 : -1;
+  }
+  function scare(b, now) {
+    if (b.mode === "fly") return;
+    const pr = freePerch(b.perch);
+    flyTo(b, now, pr ? { x: pr.x, y: pr.y, perch: pr } : groundSpot());
+  }
+
+  /* uvoq (non ushoqlari) */
+  const crumbs = [];
+  function throwCrumbs(now) {
+    for (let i = 0; i < 5; i++) crumbs.push({ x: 47, y: 33, vx: rnd(6, 18), vy: rnd(-12, -5), landed: false, taken: false, born: now,
+      el: sv("circle", { r: .55, class: "pk-crumb" }, crumbLayer) });
+    birds.forEach(b => {
+      if (b.mode === "perch" && Math.random() < .75)
+        setTimeout(() => { if (b.mode === "perch") flyTo(b, performance.now(), groundSpot(rnd(52, 72))); }, rnd(500, 1800));
+    });
+  }
+  const nearestCrumb = x => crumbs.reduce((best, c) => (c.landed && !c.taken && (!best || Math.abs(c.x - x) < Math.abs(best.x - x))) ? c : best, null);
+  function eatCrumb(c) { const i = crumbs.indexOf(c); if (i >= 0) { c.el.remove(); crumbs.splice(i, 1); } }
+  function updCrumbs(now, dt) {
+    for (let i = crumbs.length - 1; i >= 0; i--) {
+      const c = crumbs[i];
+      if (!c.landed) { c.vy += 40 * dt; c.x += c.vx * dt; c.y += c.vy * dt; if (c.y >= GY - .9) { c.y = GY - .9; c.landed = true; } }
+      c.el.setAttribute("cx", c.x.toFixed(1)); c.el.setAttribute("cy", c.y.toFixed(1));
+      if (now - c.born > 20000) { c.el.remove(); crumbs.splice(i, 1); }
+    }
+  }
+
+  /* uchayotgan barglar */
+  const leaves = [];
+  function updLeaves(now, dt, gust) {
+    if (gust > .95 && leaves.length < 6 && Math.random() < dt * 1.3) {
+      const c = crown[Math.floor(Math.random() * crown.length)];
+      leaves.push({ x: c.cx + rnd(-6, 6), y: c.cy + rnd(-3, 6), r: rnd(0, 360), vr: rnd(-220, 220), ph: rnd(0, 6), land: 0,
+        el: sv("ellipse", { rx: 1.2, ry: .6, class: "pk-leaf-fall" }, leafLayer) });
+    }
+    for (let i = leaves.length - 1; i >= 0; i--) {
+      const l = leaves[i];
+      if (!l.land) {
+        l.x += (3 + gust * 7) * dt; l.y += (4 + Math.sin(now * .003 + l.ph) * 3) * dt; l.r += l.vr * dt;
+        if (l.y >= GY - 1) { l.y = GY - 1; l.land = now; }
+      }
+      const fade = l.land ? 1 - (now - l.land) / 2500 : 1;
+      l.el.setAttribute("transform", `translate(${l.x.toFixed(1)} ${l.y.toFixed(1)}) rotate(${l.r.toFixed(0)})`);
+      l.el.setAttribute("opacity", Math.max(0, fade).toFixed(2));
+      if (fade <= 0 || l.x > 160) { l.el.remove(); leaves.splice(i, 1); }
+    }
+  }
+
+  function drawBird(b, bodyRot, headX, headY, flapping, now) {
+    const p = b.parts;
+    b.g.setAttribute("transform", `translate(${b.x.toFixed(1)} ${b.y.toFixed(1)}) scale(${b.dir * PS} ${PS})`);
+    p.body.setAttribute("transform", `rotate(${bodyRot.toFixed(1)} 2 0)`);
+    p.head.setAttribute("transform", `translate(${headX.toFixed(2)} ${headY.toFixed(2)})`);
+    p.wing.style.display = flapping ? "none" : "";
+    p.flap.style.display = flapping ? "" : "none";
+    p.legs.style.display = flapping ? "none" : "";
+    if (flapping) p.flap.setAttribute("transform", `translate(0 -6.5) scale(1 ${Math.sin(now * .045).toFixed(2)}) translate(0 6.5)`);
+  }
+  function updBird(b, now, dt) {
+    let bodyRot = 0, headX = 0, headY = 0, flapping = false;
+    if (b.mode === "fly") {
+      const F = b.fly, t = clamp01((now - F.t0) / F.dur), e = easeInOut(t), u = 1 - e;
+      const cx = (F.x0 + F.x1) / 2, cy = Math.min(F.y0, F.y1) - F.arc;
+      b.x = u * u * F.x0 + 2 * u * e * cx + e * e * F.x1;
+      b.y = u * u * F.y0 + 2 * u * e * cy + e * e * F.y1;
+      flapping = t < .88; bodyRot = e < .5 ? -12 : 5;
+      if (t >= 1) {
+        b.mode = F.perch ? "perch" : "ground"; b.perch = F.perch; b.fly = null; b.act = "idle";
+        b.until = now + rnd(1500, 4000) * (night && F.perch ? 4 : 1);
+      }
+    } else if (b.mode === "perch") {
+      headY = night ? 1.3 : 0;
+      if (now > b.until) {
+        const pr = freePerch(b.perch);
+        if (!night && Math.random() < .55) flyTo(b, now, nearestCrumb(60) ? groundSpot(nearestCrumb(60).x) : groundSpot());
+        else if (pr) flyTo(b, now, { x: pr.x, y: pr.y, perch: pr });
+        else b.until = now + 3000;
+      } else if (Math.random() < dt * .35) b.dir *= -1;
+    } else {
+      if (b.act === "walk") {
+        const dx = b.tx - b.x;
+        b.dir = dx >= 0 ? 1 : -1;
+        b.x += Math.sign(dx) * Math.min(Math.abs(dx), 5 * dt);
+        b.ph += dt * 10; headX = Math.sin(b.ph) > 0 ? 1.1 : -.5;
+        if (Math.abs(dx) < .5) { b.act = b.crumb ? "peck" : "idle"; b.until = now + (b.crumb ? 1400 : rnd(800, 2500)); }
+      } else if (b.act === "peck") {
+        bodyRot = 26 * Math.abs(Math.sin(now * .011));
+        if (now > b.until) { if (b.crumb) { eatCrumb(b.crumb); b.crumb = null; } b.act = "idle"; b.until = now + rnd(600, 2000); }
+      } else if (now > b.until) {
+        const c = nearestCrumb(b.x), r = Math.random();
+        if (c && Math.abs(c.x - b.x) < 70) { c.taken = true; b.crumb = c; b.tx = c.x - 2 * (c.x > b.x ? 1 : -1); b.act = "walk"; }
+        else if (r < .38) { b.tx = Math.max(4, Math.min(116, b.x + rnd(-22, 22))); b.act = "walk"; }
+        else if (r < .62) { b.act = "peck"; b.until = now + rnd(900, 2200); }
+        else if (r < (night ? .95 : .74)) { const pr = freePerch(); if (pr) flyTo(b, now, { x: pr.x, y: pr.y, perch: pr }); else b.until = now + 1500; }
+        else b.until = now + rnd(1000, 3000);
+      }
+    }
+    drawBird(b, bodyRot, headX, headY, flapping, now);
+  }
+
+  /* yigitning holatlari: away → in (keladi) → sit → out (ketadi) */
+  const B = { mode: "away", x: -10, ph: 0, look: 0, flipAt: 0, flipT: 0, throwAt: 0, throwT: 0, thrown: false };
+  function scareNear(x0, x1, now) { birds.forEach(b => { if (b.mode === "ground" && b.x > x0 && b.x < x1) scare(b, now); }); }
+  function updBoy(now, dt) {
+    const want = !coverVisible;
+    if (B.mode === "away" && want) { B.mode = "in"; B.x = -10; scareNear(0, 46, now); }
+    if (B.mode === "sit" && !want) { B.mode = "out"; B.x = 36; }
+    if (B.mode === "in" || B.mode === "out") {
+      const d = B.mode === "in" ? 1 : -1;
+      B.x += d * 13 * dt; B.ph += dt * 10;
+      const swing = Math.sin(B.ph) * 22;
+      walkG.setAttribute("opacity", "1"); sitG.setAttribute("opacity", "0");
+      walkG.setAttribute("transform", `translate(${B.x.toFixed(1)} ${GY}) scale(${d * K} ${K})`);
+      walker.legL.setAttribute("transform", `rotate(${swing.toFixed(1)} -4.5 -42)`);
+      walker.legR.setAttribute("transform", `rotate(${(-swing).toFixed(1)} 4.5 -42)`);
+      walker.arm.setAttribute("transform", `rotate(${(-swing * .4).toFixed(1)} 10 -74)`);
+      if (B.mode === "in" && B.x >= 36) { B.mode = "sit"; B.flipAt = now + rnd(5000, 9000); B.throwAt = now + rnd(8000, 15000); }
+      if (B.mode === "out" && B.x <= -10) B.mode = "away";
+    }
+    if (B.mode === "sit") {
+      walkG.setAttribute("opacity", "0"); sitG.setAttribute("opacity", "1");
+      let headRot = 7 + Math.sin(now / 1250) * 1.5, armRot = 0;
+      if (now < B.look) headRot = -14;
+      if (!B.flipT && now > B.flipAt) B.flipT = now;
+      if (B.flipT) {
+        const t = clamp01((now - B.flipT) / 650);
+        sitter.page.setAttribute("transform", `translate(6 0) scale(${Math.cos(t * Math.PI).toFixed(2)} 1) translate(-6 0)`);
+        if (t >= 1) { B.flipT = 0; sitter.page.removeAttribute("transform"); B.flipAt = now + rnd(6000, 12000); }
+      }
+      if (!night && !B.throwT && now > B.throwAt) B.throwT = now;
+      if (B.throwT) {
+        const t = (now - B.throwT) / 900;
+        armRot = t < .4 ? -t / .4 * 30 : t < .6 ? -30 + (t - .4) / .2 * 45 : 15 * (1 - (t - .6) / .4);
+        headRot = -4;
+        if (t >= .55 && !B.thrown) { B.thrown = true; throwCrumbs(now); }
+        if (t >= 1) { B.throwT = 0; B.thrown = false; B.throwAt = now + rnd(25000, 45000); }
+      }
+      sitter.head.setAttribute("transform", `rotate(${headRot.toFixed(1)} 0 -46)`);
+      sitter.arm.setAttribute("transform", `rotate(${armRot.toFixed(1)} 6 -35)`);
+    }
+    if (B.mode === "away") { walkG.setAttribute("opacity", "0"); sitG.setAttribute("opacity", "0"); }
+    boyHit.style.display = B.mode === "sit" ? "" : "none";
+  }
+
+  let last = 0, raf = 0;
+  function frame(now) {
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    const sec = now / 1000, gust = gustAt(sec);
+    crown.forEach(c => c.g.setAttribute("transform", `rotate(${((gust - .7) * 2.4 + Math.sin(sec * 1.4 + c.i) * .9).toFixed(2)} 104 50)`));
+    updLeaves(now, dt, gust);
+    updCrumbs(now, dt);
+    birds.forEach(b => updBird(b, now, dt));
+    updBoy(now, dt);
+    raf = requestAnimationFrame(frame);
+  }
+  function staticFrame() {
+    const now = performance.now();
+    birds.forEach(b => drawBird(b, 0, 0, b.mode === "perch" && night ? 1.3 : 0, false, now));
+    const want = !coverVisible;
+    B.mode = want ? "sit" : "away";
+    sitG.setAttribute("opacity", want ? "1" : "0");
+    sitter.head.setAttribute("transform", "rotate(7 0 -46)");
+    boyHit.style.display = want ? "" : "none";
+  }
+  return {
+    el: svg,
+    start() {
+      const fit = () => { const f = svg.parentNode && svg.parentNode.querySelector(".fab"); if (f && f.offsetWidth) svg.style.width = f.offsetWidth + "px"; };
+      fit();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+      window.addEventListener("resize", fit);
+      if (reduceMotion) { staticFrame(); return; }
+      last = performance.now(); raf = requestAnimationFrame(frame);
+    },
+    sync() { if (reduceMotion) staticFrame(); },
+    target() {
+      if (B.mode !== "sit" || !parkEl || parkEl.classList.contains("away") || parkEl.classList.contains("hide")) return null;
+      const m = svg.getScreenCTM(); if (!m) return null;
+      const pt = svg.createSVGPoint(); pt.x = 40; pt.y = 26;
+      const q = pt.matrixTransform(m);
+      return { x: q.x, y: q.y };
+    },
+    catchPlane() { B.look = performance.now() + 1800; }
+  };
 }
 
 /* ── FIKR: xabarcha, reaksiya, satr, eslatma, suzuvchi tugma ── */
@@ -1907,17 +2235,36 @@ function closeSheet() {
 const fab = el("button", { class: "fab", type: "button", onclick: openSheet },
   el("span", { class: "ic", "aria-hidden": "true", text: "✍️" }), el("span", { class: "lbl", text: "Fikr" }));
 let letterIO = null, letterVisible = false;
-function updateFab() { fab.classList.toggle("away", letterVisible || !sheetWrap.hidden || !!nudgeEl); }
+function updateFab() { parkEl.classList.toggle("away", letterVisible || !sheetWrap.hidden || !!nudgeEl); }
 function afterRender() {
   fab.querySelector(".lbl").textContent = T("Fikr");
   fab.setAttribute("aria-label", T("Muallifga yozish"));
   if (letterIO) letterIO.disconnect();
   letterVisible = false;
   const l = app.querySelector(".letter");
-  if (l) { letterIO = new IntersectionObserver(([e]) => { letterVisible = e.isIntersecting; updateFab(); }); letterIO.observe(l); }
+  if (l) { letterIO = new IntersectionObserver(([e]) => { letterVisible = e.isIntersecting; updateFab(); }, { rootMargin: "0px 0px -42% 0px" }); letterIO.observe(l); }
+  if (coverIO) coverIO.disconnect();
+  const cov = app.querySelector(".cover");
+  coverVisible = !!cov;
+  if (cov) {
+    coverIO = new IntersectionObserver(([e]) => { coverVisible = e.isIntersecting; park.sync(); }, { threshold: .15 });
+    coverIO.observe(cov);
+  }
+  park.sync();
   updateFab();
 }
-document.body.append(fab, sheetWrap, toastEl);
+let coverIO = null, coverVisible = false;
+const park = makePark();
+const parkEl = el("div", { class: "park" }, park.el, fab);
+document.body.append(parkEl, sheetWrap, toastEl);
+let parkScrollT = 0;
+window.addEventListener("scroll", () => {
+  if (innerWidth > 700) return;
+  parkEl.classList.add("hide");
+  clearTimeout(parkScrollT);
+  parkScrollT = setTimeout(() => parkEl.classList.remove("hide"), 700);
+}, { passive: true });
+park.start();
 
 /* ── ROUTER ── */
 function route(opts = {}) {

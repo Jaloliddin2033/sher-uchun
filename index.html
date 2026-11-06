@@ -59,6 +59,7 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
   body { overflow-x: clip; }
   body {
@@ -304,6 +305,75 @@
   .letter .row-btns { display: flex; flex-wrap: wrap; gap: .6rem; }
   .btn:disabled { opacity: .6; cursor: wait; }
 
+  /* ── REAKSIYA ── */
+  .react { display: grid; gap: .7rem; margin-top: 2.2rem; padding: 1.2rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper-2); }
+  .react-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .react-btn { display: inline-flex; align-items: center; gap: .45rem; font-family: var(--f-mono); font-size: .78rem; padding: .6rem .95rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--paper); color: var(--ink); cursor: pointer; transition: border-color .2s, background .2s, transform .15s; }
+  .react-btn .ic { font-size: 1.05rem; line-height: 1; }
+  .react-btn:hover:not(:disabled) { border-color: var(--lapis); transform: translateY(-1px); }
+  .react-btn[aria-pressed="true"] { background: var(--lapis); border-color: var(--lapis); color: var(--paper); }
+  .react-btn:disabled { cursor: default; }
+  .react-btn:disabled:not([aria-pressed="true"]) { opacity: .45; }
+  .react-more { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .react-more input, .nudge textarea { flex: 1 1 12rem; min-width: 0; font: inherit; font-size: 1rem; padding: .55rem .7rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--paper); color: var(--ink); }
+  .react-more input:focus, .nudge textarea:focus { outline: none; border-color: var(--lapis); box-shadow: 0 0 0 3px var(--lapis-wash); }
+  .react-thanks { margin: 0; font-family: var(--f-mono); font-size: .74rem; color: var(--lapis); }
+
+  /* ── SATR YOQDI ── */
+  .text { position: relative; }
+  .line-hint { margin: 0 0 1rem; font-family: var(--f-mono); font-size: .7rem; color: var(--muted); }
+  .text:not(.slow) .line { cursor: pointer; border-radius: 3px; transition: background .2s; }
+  @media (hover: hover) { .text:not(.slow) .line:hover { background: var(--lapis-wash); } }
+  .line.sel { background: var(--lapis-wash); }
+  .line.liked::after { content: " ♥"; color: var(--lapis); font-size: .7em; }
+  .line-pop { position: absolute; left: 0; z-index: 3; animation: appear .25s ease both; }
+  .line-pop .btn { box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+
+  /* ── ESLATMA (nudge) ── */
+  .nudge {
+    position: fixed; z-index: 25; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    width: min(23rem, calc(100vw - 32px)); background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 10px;
+    box-shadow: 0 14px 44px rgba(0,0,0,.22); padding: 1.1rem 1.1rem 1rem; display: grid; gap: .8rem; animation: slidein .45s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .nudge.out { animation: slideout .3s ease both; }
+  @keyframes slidein { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  @keyframes slideout { to { opacity: 0; transform: translateY(24px); } }
+  .nudge-title { margin: 0; padding-right: 1.6rem; font-family: var(--f-display); font-size: 1.15rem; line-height: 1.35; }
+  .nudge-x, .sheet-x { position: absolute; top: .55rem; right: .6rem; border: 0; background: transparent; color: var(--muted); font-size: 1rem; cursor: pointer; padding: .35rem .5rem; border-radius: 4px; }
+  .nudge-x:hover, .sheet-x:hover { color: var(--ink); background: var(--lapis-wash); }
+  .nudge .opts { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .nudge .chip { text-align: left; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nudge textarea { resize: vertical; }
+  .nudge .row-btns { display: flex; flex-wrap: wrap; gap: .5rem; }
+  @media (max-width: 480px) { .nudge { left: max(16px, env(safe-area-inset-left, 0px)); width: auto; } }
+
+  /* ── SUZUVCHI TUGMA va PASTKI OYNA ── */
+  .fab {
+    position: fixed; z-index: 20; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: inline-flex; align-items: center; gap: .45rem; padding: .75rem 1.05rem; border: 0; border-radius: 999px;
+    background: var(--lapis); color: var(--paper); font-family: var(--f-mono); font-size: .8rem; letter-spacing: .04em; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,.22); transition: transform .3s, opacity .3s;
+  }
+  .fab:hover { transform: translateY(-2px); }
+  .fab .ic { font-size: 1rem; line-height: 1; }
+  .fab.away { opacity: 0; transform: translateY(20px); pointer-events: none; }
+  .sheet-wrap { position: fixed; inset: 0; z-index: 30; display: grid; align-items: end; }
+  .sheet-bg { position: absolute; inset: 0; background: rgba(10,14,22,.45); }
+  .sheet {
+    position: relative; width: 100%; max-width: 40rem; justify-self: center; max-height: 88vh; overflow: auto;
+    background: var(--paper); color: var(--ink); border-radius: 14px 14px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,.25);
+    padding: 1rem max(16px, env(safe-area-inset-right, 0px)) calc(1rem + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    animation: up .35s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .sheet .letter { border-top: 0; padding-block: .4rem .6rem; }
+  .toast {
+    position: fixed; z-index: 40; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); opacity: 0; pointer-events: none;
+    max-width: calc(100vw - 32px); background: var(--ink); color: var(--paper); font-family: var(--f-mono); font-size: .75rem; line-height: 1.45;
+    padding: .6rem .95rem; border-radius: 999px; text-align: center; transition: opacity .3s, transform .3s;
+  }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
   .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding-block: 2rem 4rem; }
   .pager a { display: grid; gap: .3rem; text-decoration: none; padding: 1rem; border: 1px solid var(--rule); border-radius: 2px; min-width: 0; transition: border-color .2s, background .2s; }
   .pager a:hover { border-color: var(--lapis); background: var(--lapis-wash); }
@@ -313,7 +383,7 @@
   .hint { text-align: center; font-family: var(--f-mono); font-size: .68rem; color: var(--muted); padding-bottom: 2rem; }
 
   @media (prefers-reduced-motion: reduce) {
-    .view, .glow, .text.ink .line, .line.appear { animation: none; }
+    .view, .glow, .text.ink .line, .line.appear, .nudge, .sheet, .line-pop { animation: none; }
   }
   @media (max-width: 480px) {
     body { font-size: 17px; }
@@ -641,6 +711,7 @@ function renderPoem(no, opts = {}) {
     textEl.classList.toggle("slow", slowMode);
     lines.forEach((l, i) => l.classList.toggle("wait", slowMode && i >= shown));
     moreBtn.hidden = !slowMode; slowHint.hidden = !slowMode;
+    lineHint.hidden = slowMode; if (slowMode) hideLinePop();
     moreBtn.textContent = shown < lines.length ? T(`Keyingi satr ↓   ${shown} / ${lines.length}`) : T("Qaytadan boshlash ↺");
   }
   function reveal() {
@@ -672,6 +743,20 @@ function renderPoem(no, opts = {}) {
   });
 
   if (slowMode) shown = 1; else if (!reduceMotion && !opts.noInk) textEl.classList.add("ink");
+
+  /* fikr: satr belgilash va reaksiya */
+  const lineHint = el("p", { class: "line-hint", text: "Yoqqan satringizni bosing — muallif biladi ♥" });
+  const hideLinePop = enableLineLikes(p, textEl);
+  const reactEl = makeReact(p);
+  if (!visitReads.includes(no)) visitReads.push(no);
+  const openedAt = Date.now();
+  const nio = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting) return;
+    if (visitReads.length >= 2 || Date.now() - openedAt > 15000) {
+      nio.disconnect();
+      setTimeout(() => { if (current() === no) showNudge(); }, 1500);
+    }
+  }, { threshold: .6 });
 
   /* image maker */
   const maker = makeImageMaker(p, note);
@@ -705,8 +790,10 @@ function renderPoem(no, opts = {}) {
       el("div", { class: "tools" }, slowBtn, makerBtn),
       AUDIO[no] ? makePlayer(AUDIO[no], note) : null,
       slowHint,
+      lineHint,
       textEl,
       moreBtn,
+      reactEl,
       maker.el,
       el("div", { class: "actions" },
         saveBtn,
@@ -727,9 +814,11 @@ function renderPoem(no, opts = {}) {
     ),
     el("p", { class: "hint", text: "Telefonda: chapga yoki o'ngga suring · Kompyuterda: ← → tugmalari" })
   );
+  page.addEventListener("click", e => { if (!e.target.closest(".text")) hideLinePop(); });
   app.replaceChildren(page);
   applyScript(app);
   paintSlow();
+  nio.observe(reactEl);
   document.title = `${T(p.first)} — ${T("Inson")}`;
 }
 
@@ -755,14 +844,14 @@ async function sendToTelegram(text) {
   let j = null; try { j = await r.json(); } catch (e) {}
   if (!r.ok || (j && !j.ok)) throw new Error((j && j.description) || ("HTTP " + r.status));
 }
-function makeLetter(poemNo) {
+function makeLetter(poemNo, prefix = "letter") {
   const born = Date.now();
   const picked = new Set();
-  const fName = el("input", { id: "letter-name", type: "text", maxlength: "60", autocomplete: "name", placeholder: "Masalan, Aziz" });
-  const fContact = el("input", { id: "letter-contact", type: "text", maxlength: "60", placeholder: "@username yoki telefon" });
-  const fText = el("textarea", { id: "letter-text", rows: "4", maxlength: "1000", placeholder: "Fikringiz, savolingiz yoki tilagingiz…" });
-  const trap = el("input", { id: "letter-website", name: "website", type: "text", tabindex: "-1", autocomplete: "off", "aria-hidden": "true", class: "trap" });
-  const fPoem = poemNo == null ? el("select", { id: "letter-poem" },
+  const fName = el("input", { id: prefix + "-name", type: "text", maxlength: "60", autocomplete: "name", placeholder: "Masalan, Aziz" });
+  const fContact = el("input", { id: prefix + "-contact", type: "text", maxlength: "60", placeholder: "@username yoki telefon" });
+  const fText = el("textarea", { id: prefix + "-text", rows: "4", maxlength: "1000", placeholder: "Fikringiz, savolingiz yoki tilagingiz…" });
+  const trap = el("input", { id: prefix + "-website", name: "website", type: "text", tabindex: "-1", autocomplete: "off", "aria-hidden": "true", class: "trap" });
+  const fPoem = poemNo == null ? el("select", { id: prefix + "-poem" },
     el("option", { value: "", text: "Umumiy fikr" }),
     POEMS.map(p => el("option", { value: String(p.no), text: `${p.no}. ${p.first}` }))) : null;
   const count = el("span", { text: "0 / 1000" });
@@ -793,6 +882,7 @@ function makeLetter(poemNo) {
     form.reset(); picked.clear();
     chipsEl.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
     paint();
+    sessionSet("inson-fb", "1");
     status.textContent = T("Yuborildi. Rahmat! Muallif xabaringizni Telegramda o'qiydi.");
   }
 
@@ -822,7 +912,7 @@ function makeLetter(poemNo) {
   });
   paint();
 
-  return el("section", { class: "letter", id: poemNo == null ? "xat" : null },
+  return el("section", { class: "letter", id: poemNo == null && prefix === "letter" ? "xat" : null },
     el("h2", { class: "section-title", text: "Muallifga yozish" }),
     el("p", { class: "sub", text: poemNo == null
       ? "Xabaringiz to'g'ridan-to'g'ri muallifning Telegramiga boradi."
@@ -1469,13 +1559,202 @@ function startWind(cv) {
   };
 }
 
+/* ── FIKR: xabarcha, reaksiya, satr, eslatma, suzuvchi tugma ── */
+const toastEl = el("div", { class: "toast", role: "status", "aria-live": "polite" });
+function toast(msg) {
+  toastEl.textContent = msg; toastEl.classList.add("on");
+  clearTimeout(toast.t); toast.t = setTimeout(() => toastEl.classList.remove("on"), 2800);
+}
+let lastNotify = 0;
+async function tgNotify(text) {
+  if (!tgConfigured()) { toast(T("Sinov rejimi: Telegram hali ulanmagan.")); return false; }
+  if (Date.now() - lastNotify < 3000) { toast(T("Biroz kuting va qayta bosing.")); return false; }
+  lastNotify = Date.now();
+  try { await sendToTelegram(text); sessionSet("inson-fb", "1"); return true; }
+  catch (e) { toast(T("Yuborib bo'lmadi. Internetni tekshiring.")); return false; }
+}
+
+/* 1) Bir bosishda reaksiya */
+function makeReact(p) {
+  const KEY = "inson-reacted";
+  let map = {}; try { map = JSON.parse(loadVal(KEY, "{}")) || {}; } catch (e) {}
+  const opts = [["❤️", "Yoqdi"], ["💭", "O'ylantirdi"], ["🥲", "Ta'sir qildi"]];
+  const link = `\n🔗 ${PUBLIC_URL}#sher-${p.no}`;
+  const input = el("input", { id: "react-extra", type: "text", maxlength: "300", placeholder: "Bir so'z qo'shasizmi? (ixtiyoriy)" });
+  const sendBtn = el("button", { class: "btn quiet", type: "submit", text: "Yuborish" });
+  const more = el("form", { class: "react-more", hidden: true, novalidate: "" }, input, sendBtn);
+  const thanks = el("p", { class: "react-thanks", hidden: true });
+  const btns = opts.map(([ic, label]) => el("button", { class: "react-btn", type: "button" },
+    el("span", { class: "ic", "aria-hidden": "true", text: ic }), el("span", { text: label })));
+  const lock = () => {
+    const chosen = map[p.no];
+    btns.forEach((b, i) => { b.disabled = !!chosen; b.setAttribute("aria-pressed", String(opts[i][1] === chosen)); });
+  };
+  btns.forEach((b, i) => b.addEventListener("click", async () => {
+    if (map[p.no]) return;
+    const [ic, label] = opts[i];
+    map[p.no] = label; lock();
+    const ok = await tgNotify(`${ic} ${label} — ${p.no}-she'r: ${p.first}${link}`);
+    if (!ok) { delete map[p.no]; lock(); return; }
+    storeVal(KEY, JSON.stringify(map));
+    more.hidden = false;
+    input.focus({ preventScroll: true });
+  }));
+  more.addEventListener("submit", async e => {
+    e.preventDefault();
+    const v = input.value.trim();
+    if (v) {
+      sendBtn.disabled = true;
+      const ok = await tgNotify(`💬 ${p.no}-she'r haqida: ${v}${link}`);
+      sendBtn.disabled = false;
+      if (!ok) return;
+    }
+    more.hidden = true;
+    thanks.textContent = T("Rahmat! Fikringiz muallifga yetib bordi.");
+    thanks.hidden = false;
+  });
+  lock();
+  if (map[p.no]) { thanks.textContent = `Siz bu she'rga «${map[p.no]}» degansiz. Rahmat!`; thanks.hidden = false; }
+  return el("section", { class: "react" },
+    el("span", { class: "eyebrow", text: "Sizga qanday ta'sir qildi?" }),
+    el("div", { class: "react-row" }, btns), more, thanks);
+}
+
+/* 2) Satrni bosib belgilash */
+function enableLineLikes(p, textEl) {
+  const KEY = "inson-lines";
+  const liked = loadSet(KEY);
+  const flat = p.stanzas.flat();
+  textEl.querySelectorAll(".line").forEach((l, i) => {
+    l.dataset.idx = i;
+    if (liked.has(`${p.no}:${i}`)) l.classList.add("liked");
+  });
+  const btn = el("button", { class: "btn solid", type: "button", text: "❤️ Shu satr menga tegdi" });
+  const pop = el("div", { class: "line-pop", hidden: true }, btn);
+  textEl.append(pop);
+  let cur = null;
+  const hide = () => { pop.hidden = true; if (cur) cur.classList.remove("sel"); cur = null; };
+  textEl.addEventListener("click", e => {
+    if (slowMode || e.target.closest(".line-pop")) return;
+    if (window.getSelection && window.getSelection().toString()) return;
+    const l = e.target.closest(".line");
+    if (!l || l === cur) { hide(); return; }
+    hide(); cur = l; l.classList.add("sel");
+    const done = liked.has(`${p.no}:${l.dataset.idx}`);
+    btn.textContent = T(done ? "♥ Bu satrni belgilagansiz" : "❤️ Shu satr menga tegdi");
+    btn.disabled = done;
+    pop.style.top = (l.offsetTop + l.offsetHeight + 4) + "px";
+    pop.hidden = false;
+  });
+  btn.addEventListener("click", async () => {
+    if (!cur) return;
+    const i = +cur.dataset.idx, k = `${p.no}:${i}`;
+    if (liked.has(k)) return;
+    btn.disabled = true;
+    const ok = await tgNotify(`✨ Satr yoqdi — ${p.no}-she'r\n«${flat[i]}»\n🔗 ${PUBLIC_URL}#sher-${p.no}`);
+    btn.disabled = false;
+    if (!ok) return;
+    liked.add(k); storeSet(KEY, liked);
+    if (cur) cur.classList.add("liked");
+    toast(T("Rahmat! Muallif bu satr sizga yoqqanini biladi."));
+    hide();
+  });
+  return hide;
+}
+
+/* 3) To'g'ri paytda chiqadigan eslatma */
+const visitReads = [];
+let nudgeEl = null;
+function closeNudge() {
+  if (!nudgeEl) return;
+  const n = nudgeEl; nudgeEl = null;
+  n.classList.add("out"); setTimeout(() => n.remove(), reduceMotion ? 0 : 300);
+  updateFab();
+}
+function showNudge() {
+  if (nudgeEl || !sheetWrap.hidden || sessionGet("inson-nudge") || sessionGet("inson-fb")) return;
+  sessionSet("inson-nudge", "1");
+  const reads = visitReads.slice(-4).map(n => POEMS[n - 1]);
+  let pick = reads.length === 1 ? reads[0].no : null;
+  const ta = el("textarea", { id: "nudge-text", rows: "2", maxlength: "500", placeholder: "Bir-ikki so'z (ixtiyoriy)" });
+  const err = el("p", { class: "field-err", role: "alert" });
+  const chips = el("div", { class: "opts", role: "group", "aria-label": "O'qigan she'rlaringiz" });
+  reads.forEach(q => chips.append(el("button", { class: "chip", type: "button", "aria-pressed": "false", text: `${q.no}. ${q.first}`, onclick: e => {
+    pick = pick === q.no ? null : q.no;
+    chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+    if (pick) e.currentTarget.setAttribute("aria-pressed", "true");
+    err.textContent = "";
+  }})));
+  const send = el("button", { class: "btn solid", type: "submit", text: "Yuborish" });
+  const form = el("form", { class: "nudge", role: "dialog", "aria-label": "Fikringiz", novalidate: "" },
+    el("button", { class: "nudge-x", type: "button", "aria-label": "Yopish", text: "✕", onclick: closeNudge }),
+    el("p", { class: "nudge-title", text: reads.length > 1
+      ? `${visitReads.length} ta she'r o'qidingiz. Qaysi biri ko'proq yoqdi?`
+      : "She'r yoqdimi? Muallifga bir-ikki so'z qoldiring." }),
+    reads.length > 1 ? chips : null,
+    ta, err,
+    el("div", { class: "row-btns" }, send, el("button", { class: "btn quiet", type: "button", text: "Keyinroq", onclick: closeNudge })));
+  ta.addEventListener("input", () => { err.textContent = ""; });
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const v = ta.value.trim();
+    if (!pick && !v) { err.textContent = T("She'rni tanlang yoki bir so'z yozing."); return; }
+    const q = pick ? POEMS[pick - 1] : null;
+    send.disabled = true;
+    const ok = await tgNotify(["🌟 O'quvchi fikri", q ? `📖 Eng yoqqani: ${q.no}-she'r: ${q.first}` : null, v ? `💬 ${v}` : null,
+      `📚 Bu safar o'qigani: ${visitReads.length} ta she'r`, `🔗 ${PUBLIC_URL}${q ? "#sher-" + q.no : ""}`].filter(Boolean).join("\n"));
+    send.disabled = false;
+    if (ok) {
+      form.replaceChildren(el("p", { class: "nudge-title", text: T("Rahmat! Fikringiz muallifga yetib bordi.") }));
+      setTimeout(closeNudge, 2200);
+    }
+  });
+  applyScript(form);
+  nudgeEl = form; document.body.append(form); updateFab();
+}
+
+/* 4) Suzuvchi «Fikr» tugmasi va pastdan chiqadigan oyna */
+const sheetX = el("button", { class: "sheet-x", type: "button", "aria-label": "Yopish", text: "✕", onclick: () => closeSheet() });
+const sheetBox = el("div", { class: "sheet", role: "dialog", "aria-modal": "true", "aria-label": "Muallifga yozish" });
+const sheetWrap = el("div", { class: "sheet-wrap", hidden: true }, el("div", { class: "sheet-bg", onclick: () => closeSheet() }), sheetBox);
+function openSheet() {
+  if (nudgeEl) closeNudge();
+  sheetBox.replaceChildren(sheetX, makeLetter(current() || null, "sheet"));
+  applyScript(sheetBox);
+  sheetWrap.hidden = false;
+  document.documentElement.style.overflow = "hidden";
+  updateFab();
+  const t = sheetBox.querySelector("textarea"); if (t) t.focus({ preventScroll: true });
+}
+function closeSheet() {
+  sheetWrap.hidden = true;
+  document.documentElement.style.overflow = "";
+  updateFab();
+}
+const fab = el("button", { class: "fab", type: "button", onclick: openSheet },
+  el("span", { class: "ic", "aria-hidden": "true", text: "✍️" }), el("span", { class: "lbl", text: "Fikr" }));
+let letterIO = null, letterVisible = false;
+function updateFab() { fab.classList.toggle("away", letterVisible || !sheetWrap.hidden || !!nudgeEl); }
+function afterRender() {
+  fab.querySelector(".lbl").textContent = T("Fikr");
+  fab.setAttribute("aria-label", T("Muallifga yozish"));
+  if (letterIO) letterIO.disconnect();
+  letterVisible = false;
+  const l = app.querySelector(".letter");
+  if (l) { letterIO = new IntersectionObserver(([e]) => { letterVisible = e.isIntersecting; updateFab(); }); letterIO.observe(l); }
+  updateFab();
+}
+document.body.append(fab, sheetWrap, toastEl);
+
 /* ── ROUTER ── */
 function route(opts = {}) {
   const y = window.scrollY;
   const h = location.hash.replace("#", "");
   const m = h.match(/^sher-(\d+)$/);
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (nudgeEl && !opts.keepScroll) closeNudge();
   if (m) { if (windStop) windStop(); if (sceneStop) sceneStop(); renderPoem(+m[1], opts); } else renderHome();
+  afterRender();
   if (opts.keepScroll) { window.scrollTo(0, y); return; }
   if (!m && (h === "mundarija" || h === "ilhom" || h === "xat")) document.getElementById(h).scrollIntoView();
   else window.scrollTo(0, 0);
@@ -1485,6 +1764,8 @@ function go(dir) { const n = current(); if (!n) return; const t = n + dir; if (t
 
 window.addEventListener("hashchange", () => route());
 document.addEventListener("keydown", e => {
+  if (!sheetWrap.hidden) { if (e.key === "Escape") closeSheet(); return; }
+  if (nudgeEl && e.key === "Escape") { closeNudge(); return; }
   if (e.target.closest("input, textarea, select")) return;
   if (e.key === "ArrowLeft") go(-1);
   else if (e.key === "ArrowRight") go(1);
@@ -1494,7 +1775,7 @@ document.addEventListener("keydown", e => {
 let tx = 0, ty = 0;
 document.addEventListener("touchstart", e => { tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, { passive: true });
 document.addEventListener("touchend", e => {
-  if (e.target.closest && e.target.closest(".maker, .letter")) return;
+  if (e.target.closest && e.target.closest(".maker, .letter, .react, .sheet-wrap, .nudge, .line-pop")) return;
   const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
 }, { passive: true });

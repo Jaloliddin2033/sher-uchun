@@ -1028,7 +1028,7 @@ async function drawCard(p, stanzas, fmt, look) {
 }
 
 /* ── INSON UYCHASI: n — eshik, o — deraza ── */
-let sceneStop = null, windEmit = null;
+let sceneStop = null, windEmit = null, sceneSeen = false;
 const SVGNS = "http://www.w3.org/2000/svg";
 function sv(tag, attrs = {}, parent) {
   const n = document.createElementNS(SVGNS, tag);
@@ -1042,42 +1042,63 @@ const easeOut = p => 1 - Math.pow(1 - clamp01(p), 3);
 function sessionGet(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
 function sessionSet(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
 
-/* Harfning ichki bo'shlig'ini piksel bo'yicha o'lchaydi (n — ark, o — oval) */
-function glyphGeom(ch, font, size) {
-  const pad = Math.ceil(size * .25), base = Math.ceil(size * 1.25);
-  const cw = Math.ceil(size * 1.5), chh = Math.ceil(size * 1.6);
+/* Harfning ichki bo'shlig'ini (counter) piksel bo'yicha aniq kesib oladi: n — ark, o — oval.
+   3 barobar kattalikda chizib, ichidan "suv quyib" (flood fill) shaklini topadi. */
+function glyphCounter(ch, fontAt, size) {
+  const S = 3, fz = size * S;
+  const pad = Math.ceil(fz * .25), base = Math.ceil(fz * 1.25);
+  const cw = Math.ceil(fz * 1.5), chh = Math.ceil(fz * 1.6);
   const c = document.createElement("canvas"); c.width = cw; c.height = chh;
   const x = c.getContext("2d", { willReadFrequently: true });
-  x.font = font; x.textBaseline = "alphabetic"; x.fillStyle = "#000";
+  x.font = fontAt(fz); x.textBaseline = "alphabetic"; x.fillStyle = "#000";
   x.fillText(ch, pad, base);
   const d = x.getImageData(0, 0, cw, chh).data;
-  const ink = (px, py) => px >= 0 && py >= 0 && px < cw && py < chh && d[(py * cw + px) * 4 + 3] > 110;
+  const N = cw * chh, A = new Uint8Array(N);
+  for (let i = 0; i < N; i++) A[i] = d[i * 4 + 3] >= 128 ? 1 : 0;
   let top = -1;
-  for (let py = 0; py < base && top < 0; py++) for (let px = 0; px < cw; px++) if (ink(px, py)) { top = py; break; }
+  for (let py = 0; py < base && top < 0; py++) for (let px = 0; px < cw; px++) if (A[py * cw + px]) { top = py; break; }
   if (top < 0) return null;
   const xh = base - top;
-  const runsAt = py => {
-    const r = []; let st = -1;
-    for (let px = 0; px <= cw; px++) {
-      const on = px < cw && ink(px, py);
-      if (on && st < 0) st = px;
-      if (!on && st >= 0) { r.push([st, px - 1]); st = -1; }
-    }
-    return r;
-  };
-  if (ch === "n") {
-    const y1 = base - Math.round(xh * .3), r = runsAt(y1);
-    if (r.length < 2) return null;
-    const b = r[0][1] + 1, e = r[1][0] - 1, mid = Math.round((b + e) / 2);
-    let it = y1; while (it > 0 && !ink(mid, it)) it--;
-    return { xh, l: b - pad, r: e - pad, top: it + 1 - base };
+  const sy = base - Math.round(xh * (ch === "n" ? .3 : .5));
+  const runs = []; let st = -1;
+  for (let px = 0; px <= cw; px++) {
+    const on = px < cw && A[sy * cw + px];
+    if (on && st < 0) st = px;
+    if (!on && st >= 0) { runs.push([st, px - 1]); st = -1; }
   }
-  const ym = base - Math.round(xh / 2), r = runsAt(ym);
-  if (r.length < 2) return null;
-  const b = r[0][1] + 1, e = r[r.length - 1][0] - 1, mid = Math.round((b + e) / 2);
-  let it = ym; while (it > 0 && !ink(mid, it)) it--;
-  let ib = ym; while (ib < chh - 1 && !ink(mid, ib)) ib++;
-  return { xh, l: b - pad, r: e - pad, top: it + 1 - base, bot: ib - 1 - base };
+  if (runs.length < 2) return null;
+  const sx = Math.round((runs[0][1] + (ch === "n" ? runs[1][0] : runs[runs.length - 1][0])) / 2);
+  const maxY = ch === "n" ? base - 1 : chh - 2;
+  const rowMin = new Int32Array(chh).fill(cw), rowMax = new Int32Array(chh).fill(-1);
+  const seen = new Uint8Array(N), stack = [sy * cw + sx];
+  while (stack.length) {
+    const i = stack.pop();
+    if (seen[i] || A[i]) continue;
+    seen[i] = 1;
+    const py = (i / cw) | 0, px = i - py * cw;
+    if (px <= 0 || px >= cw - 1 || py <= 0) return null;
+    if (px < rowMin[py]) rowMin[py] = px;
+    if (px > rowMax[py]) rowMax[py] = px;
+    stack.push(i - 1, i + 1, i - cw);
+    if (py < maxY) stack.push(i + cw);
+  }
+  let y0 = -1, y1 = -1;
+  for (let py = 0; py < chh; py++) if (rowMax[py] >= 0) { if (y0 < 0) y0 = py; y1 = py; }
+  if (y0 < 0) return null;
+  const ov = .7 * S;
+  const X = v => (v - pad) / S, Y = v => (v - base) / S;
+  const rows = [];
+  for (let py = y0; py <= y1; py += S) rows.push(py);
+  if (rows[rows.length - 1] !== y1) rows.push(y1);
+  const left = [], right = [];
+  rows.forEach(py => {
+    const yy = py === y0 ? py - ov : py === y1 ? (ch === "n" ? base : py + 1 + ov) : py + .5;
+    left.push([X(rowMin[py] - ov), Y(yy)]);
+    right.push([X(rowMax[py] + 1 + ov), Y(yy)]);
+  });
+  const poly = left.concat(right.reverse());
+  const xs = poly.map(p => p[0]);
+  return { xh: xh / S, poly, l: Math.min(...xs), r: Math.max(...xs), top: Y(y0 - ov), bot: ch === "n" ? 0 : Y(y1 + 1 + ov) };
 }
 
 /* Kostyumdagi yigit: oyoqlari 0 da, bo'yi 100 birlik, o'ngga qaragan */
@@ -1128,7 +1149,7 @@ async function startScene(wrap, h1, onWindow) {
   const still = reduceMotion;
   const hour = new Date().getHours();
   const night = hour >= 18 || hour < 6;
-  const skip = still || sessionGet("inson-scene") === "1";
+  const skip = still || sceneSeen;
   const t0 = performance.now();
 
   function measure() {
@@ -1136,25 +1157,28 @@ async function startScene(wrap, h1, onWindow) {
     if (!node || node.nodeType !== 3 || node.nodeValue.length < 5) return null;
     const cs = getComputedStyle(h1);
     const size = parseFloat(cs.fontSize);
-    const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    const gn = glyphGeom("n", font, size), go = glyphGeom("o", font, size);
+    const fontAt = px => `${cs.fontStyle} ${cs.fontWeight} ${px}px ${cs.fontFamily}`;
+    const gn = glyphCounter("n", fontAt, size), go = glyphCounter("o", fontAt, size);
     if (!gn || !go) return null;
     const wr = wrap.getBoundingClientRect();
     const rg = document.createRange();
     const charX = i => { rg.setStart(node, i); rg.setEnd(node, i + 1); return rg.getBoundingClientRect().left - wr.left; };
     const base = h1.querySelector(".bl").getBoundingClientRect().top - wr.top;
     const nx = charX(1), ox = charX(3);
-    return { base, xh: gn.xh,
-      door: { l: nx + gn.l + 1, r: nx + gn.r - 1, top: base + gn.top + 1 },
-      win: { cx: ox + (go.l + go.r) / 2, cy: base + (go.top + go.bot) / 2, rx: (go.r - go.l) / 2 - .5, ry: (go.bot - go.top) / 2 - .5 } };
+    const place = (g, at) => ({ poly: g.poly.map(([px, py]) => [at + px, base + py]),
+      l: at + g.l, r: at + g.r, top: base + g.top, bot: base + g.bot });
+    const door = place(gn, nx), w = place(go, ox);
+    return { base, xh: gn.xh, door,
+      win: Object.assign(w, { cx: (w.l + w.r) / 2, cy: (w.top + w.bot) / 2, rx: (w.r - w.l) / 2, ry: (w.bot - w.top) / 2 }) };
   }
 
   function build(G) {
     svg.textContent = "";
     const id = "sc" + Math.random().toString(36).slice(2, 7);
     const defs = sv("defs", {}, svg);
+    const pts = p => p.map(([a, b]) => `${a.toFixed(2)},${b.toFixed(2)}`).join(" ");
     const clip = sv("clipPath", { id: id + "c" }, defs);
-    sv("ellipse", { cx: G.win.cx, cy: G.win.cy, rx: G.win.rx, ry: G.win.ry }, clip);
+    sv("polygon", { points: pts(G.win.poly) }, clip);
     const lg = sv("radialGradient", { id: id + "g", cx: "60%", cy: "40%", r: "75%" }, defs);
     sv("stop", { offset: "0", "stop-color": "#ffeab0" }, lg);
     sv("stop", { offset: "1", "stop-color": "#efb340" }, lg);
@@ -1165,17 +1189,16 @@ async function startScene(wrap, h1, onWindow) {
     const { cx, cy, rx, ry } = G.win;
     const winG = sv("g", { opacity: "0" }, svg);
     sv("ellipse", { cx, cy, rx: rx * 3, ry: ry * 2.4, fill: `url(#${id}h)`, opacity: night ? "1" : ".35" }, winG);
-    sv("ellipse", { cx, cy, rx, ry, fill: `url(#${id}g)` }, winG);
+    sv("polygon", { points: pts(G.win.poly), fill: `url(#${id}g)` }, winG);
     const inner = sv("g", { "clip-path": `url(#${id}c)` }, winG);
     const wg = sv("g", { transform: `translate(${cx} ${cy + ry * .08}) scale(${(ry * 2) / 100})` }, inner);
     const writer = drawWriter(wg);
 
-    const D = G.door, dw = D.r - D.l, rr = dw / 2, at = Math.min(D.top + rr, G.base - 2);
-    const dp = `M${D.l} ${G.base} V${at} A${rr} ${rr} 0 0 1 ${D.r} ${at} V${G.base} Z`;
+    const D = G.door, dw = D.r - D.l;
     const doorG = sv("g", { opacity: "0" }, svg);
-    sv("path", { d: dp, fill: `url(#${id}g)` }, doorG);
+    sv("polygon", { points: pts(D.poly), fill: `url(#${id}g)` }, doorG);
     const panel = sv("g", {}, doorG);
-    sv("path", { d: dp, class: "sc-lapis" }, panel);
+    sv("polygon", { points: pts(D.poly), class: "sc-lapis" }, panel);
     sv("circle", { cx: D.r - dw * .24, cy: G.base - (G.base - D.top) * .42, r: Math.max(1.1, dw * .07), class: "sc-paper" }, panel);
 
     const bh = G.xh * .9;
@@ -1239,7 +1262,7 @@ async function startScene(wrap, h1, onWindow) {
     r.winG.setAttribute("opacity", (wO * (night ? 1 : .88)).toFixed(3));
 
     if (t >= T8) {
-      if (r.hit.style.display === "none") { r.hit.style.display = ""; sessionSet("inson-scene", "1"); }
+      if (r.hit.style.display === "none") { r.hit.style.display = ""; sceneSeen = true; }
       const sec = now / 1000, looking = now < r.lookUntil;
       const aw = still || looking ? 0 : Math.sin(sec * 9) * 3 + Math.sin(sec * 23) * 1.2;
       r.writer.arm.setAttribute("transform", `rotate(${aw} -14 -14)`);

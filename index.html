@@ -1010,6 +1010,16 @@ async function drawCard(p, stanzas, fmt, look) {
 }
 
 /* ── WIND (shabboda) on the cover ── */
+/* Shamolda uchib o'tadigan so'zlar: [so'z, she'r raqami] */
+const WIND_WORDS = [
+  ["o'rnim", 1], ["orzularim", 1], ["soat", 2], ["nurli kunlar", 2], ["ilhom", 3], ["shukur", 3],
+  ["g'aflat", 4], ["maftun ko'zlar", 5], ["qaddingni tik tut", 6], ["rost so'zla", 6], ["tazim", 7],
+  ["qalbimdagi so'zlar", 8], ["umr", 9], ["ish tugamas", 9], ["oddiy insonman", 10], ["qalqon", 10],
+  ["vijdon", 11], ["panoh", 11], ["qadar", 12], ["Sabrun Jamil", 12], ["sham", 13], ["shabboda", 13],
+  ["yo'lim olis", 13], ["diydor", 14], ["xotiralar", 14], ["hikmat", 15], ["chuqur nafas ol", 15],
+  ["toshbaqa", 16], ["manzil", 16], ["har bir kun", 17], ["qadrla vaqtni", 18], ["sakinat", 18],
+  ["sevgi", 19], ["qalam", 19], ["dasturxon", 20], ["rahmat", 20], ["cho'g'", 21], ["nuring omonmi?", 21]
+];
 let windStop = null;
 function startWind(cv) {
   if (windStop) windStop();
@@ -1020,7 +1030,7 @@ function startWind(cv) {
   const rnd = (a, b) => a + Math.random() * (b - a);
   const colors = () => {
     const cs = getComputedStyle(document.documentElement);
-    return { line: cs.getPropertyValue("--muted").trim() || "#7f8697", dot: cs.getPropertyValue("--lapis").trim() || "#1b6a78" };
+    return { line: cs.getPropertyValue("--muted").trim() || "#7f8697", dot: cs.getPropertyValue("--lapis").trim() || "#1b6a78", word: cs.getPropertyValue("--ink-soft").trim() || "#4d5670" };
   };
   let col = colors();
   const newStreak = any => { const len = rnd(W * .18, W * .45);
@@ -1033,6 +1043,44 @@ function startWind(cv) {
     const n = Math.round(Math.max(7, Math.min(16, W / 60)));
     streaks = Array.from({ length: n }, () => newStreak(true));
     motes = Array.from({ length: Math.round(n * 1.4) }, () => newMote(true));
+    fs = W < 600 ? 16 : 20;
+    maxWords = W < 600 ? 3 : 5;
+    words = [];
+    if (still) for (let i = 0; i < maxWords; i++) spawnWord(performance.now());
+  }
+
+  /* ── flying words ── */
+  let words = [], fs = 18, maxWords = 4, nextSpawn = 0, hover = null, lastNow = 0;
+  const wordFont = () => `italic 300 ${fs}px "Spectral", Georgia, serif`;
+  function spawnWord(now) {
+    const used = new Set(words.map(w => w.src));
+    const pool = WIND_WORDS.filter(w => !used.has(w[0]));
+    const [src, no] = pool[Math.floor(Math.random() * pool.length)];
+    const text = T(src);
+    ctx.font = wordFont();
+    const w = ctx.measureText(text).width;
+    let y = 0;
+    for (let k = 0; k < 10; k++) {
+      y = rnd(H * .12 + fs, H * .9);
+      if (words.every(o => Math.abs(o.y - y) > fs * 2.2)) break;
+    }
+    words.push({ src, no, text, w, x: rnd(W * .04, Math.max(W * .05, W * .7 - w)), y, by: y,
+      born: now, life: rnd(7000, 10000), sp: rnd(.12, .3), ph: rnd(0, 6.28) });
+  }
+  function wordAlpha(o, now) {
+    if (still) return .7;
+    const t = (now - o.born) / o.life;
+    return Math.max(0, Math.min(1, t < .2 ? t / .2 : t > .7 ? (1 - t) / .3 : 1));
+  }
+  function hitWord(e) {
+    const r = cv.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    const now = performance.now();
+    for (const o of words) {
+      if (wordAlpha(o, now) < .15) continue;
+      if (px >= o.x - 10 && px <= o.x + o.w + 10 && py >= o.y - fs - 6 && py <= o.y + fs * .4 + 6) return o;
+    }
+    return null;
   }
   function frame(now) {
     if (!cv.isConnected) return;
@@ -1050,6 +1098,23 @@ function startWind(cv) {
         ctx.stroke();
       }
       if (s.x > W + 20) Object.assign(s, newStreak(false));
+    }
+    const dt = Math.min(100, lastNow ? now - lastNow : 16); lastNow = now;
+    if (!still) {
+      if (words.length < maxWords && now > nextSpawn) { spawnWord(now); nextSpawn = now + rnd(1400, 2800); }
+      words = words.filter(o => (now - o.born) < o.life && o.x < W + 10);
+    }
+    ctx.font = wordFont(); ctx.textBaseline = "alphabetic";
+    for (const o of words) {
+      const isHover = o === hover;
+      if (!still) {
+        if (isHover) o.born += dt;
+        else { o.x += o.sp * gust * 1.4; o.y = o.by + Math.sin(time * .9 + o.ph) * 3; }
+      }
+      const a = wordAlpha(o, now);
+      ctx.fillStyle = isHover ? col.dot : col.word;
+      ctx.globalAlpha = isHover ? Math.max(a, .5) * .95 : a * .42;
+      ctx.fillText(o.text, o.x, o.y);
     }
     ctx.fillStyle = col.dot;
     for (const m of motes) {
@@ -1076,8 +1141,27 @@ function startWind(cv) {
   const mq = window.matchMedia("(prefers-color-scheme: dark)");
   const onMq = () => { col = colors(); };
   mq.addEventListener && mq.addEventListener("change", onMq);
+  const cover = cv.parentElement;
+  const onMove = e => {
+    if (e.target.closest("a, button")) { hover = null; cover.style.cursor = ""; return; }
+    hover = hitWord(e);
+    cover.style.cursor = hover ? "pointer" : "";
+    if (still) frame(performance.now());
+  };
+  const onLeave = () => { hover = null; cover.style.cursor = ""; if (still) frame(performance.now()); };
+  const onClick = e => {
+    if (e.target.closest("a, button")) return;
+    const o = hitWord(e);
+    if (o) location.hash = "sher-" + o.no;
+  };
+  cover.addEventListener("mousemove", onMove);
+  cover.addEventListener("mouseleave", onLeave);
+  cover.addEventListener("click", onClick);
   windStop = () => {
     ro.disconnect(); io.disconnect();
+    cover.removeEventListener("mousemove", onMove);
+    cover.removeEventListener("mouseleave", onLeave);
+    cover.removeEventListener("click", onClick);
     document.removeEventListener("visibilitychange", onVis);
     mq.removeEventListener && mq.removeEventListener("change", onMq);
     windStop = null;

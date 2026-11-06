@@ -35,6 +35,7 @@
     --lapis: #1b6a78;
     --lapis-wash: rgba(27,106,120,.10);
     --glow: rgba(255,176,92,0);
+    --danger: #b2452f;
     --f-display: "Marcellus", "Times New Roman", serif;
     --f-body: "Spectral", Georgia, "Times New Roman", serif;
     --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -44,6 +45,7 @@
       --paper: #121620; --paper-2: #1a1f2b; --ink: #dfe4ea; --ink-soft: #aab2c0;
       --muted: #737c8d; --rule: #2b3241; --lapis: #62b8c4; --lapis-wash: rgba(98,184,196,.12);
       --glow: rgba(255,176,92,.11);
+      --danger: #e58a75;
       color-scheme: dark;
     }
   }
@@ -51,6 +53,7 @@
     --paper: #121620; --paper-2: #1a1f2b; --ink: #dfe4ea; --ink-soft: #aab2c0;
     --muted: #737c8d; --rule: #2b3241; --lapis: #62b8c4; --lapis-wash: rgba(98,184,196,.12);
     --glow: rgba(255,176,92,.11);
+    --danger: #e58a75;
     color-scheme: dark;
   }
 
@@ -263,6 +266,30 @@
   .maker .row-btns { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
   .maker small { font-family: var(--f-mono); font-size: .68rem; color: var(--muted); }
 
+  /* ── MUALLIFGA YOZISH (Telegram) ── */
+  .letter { border-top: 1px solid var(--rule); padding-block: 2rem 2.4rem; display: grid; gap: .4rem; }
+  .letter .sub { margin: 0 0 .8rem; color: var(--ink-soft); font-size: .98rem; }
+  .letter .demo { margin: 0 0 .6rem; justify-self: start; font-family: var(--f-mono); font-size: .68rem; letter-spacing: .06em; padding: .3rem .6rem; border: 1px dashed var(--muted); border-radius: 2px; color: var(--muted); }
+  .letter-form { display: grid; gap: 1.1rem; position: relative; }
+  .field { display: grid; gap: .4rem; min-width: 0; }
+  .field .lab { display: flex; justify-content: space-between; gap: .6rem; }
+  .letter-form input, .letter-form textarea, .letter-form select {
+    width: 100%; min-width: 0; font: inherit; font-size: 1rem; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 3px; padding: .65rem .75rem;
+  }
+  .letter-form textarea { resize: vertical; min-height: 6.5rem; line-height: 1.6; }
+  .letter-form input:focus, .letter-form textarea:focus, .letter-form select:focus { outline: none; border-color: var(--lapis); box-shadow: 0 0 0 3px var(--lapis-wash); }
+  .letter-form ::placeholder { color: var(--muted); opacity: 1; }
+  .letter .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1rem; }
+  .letter .opts { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .trap { position: absolute !important; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .field-err { margin: 0; font-family: var(--f-mono); font-size: .72rem; color: var(--danger); }
+  .field-err:empty { display: none; }
+  .preview { display: grid; gap: .45rem; }
+  .bubble { margin: 0; justify-self: start; max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--f-body); font-size: .92rem; line-height: 1.5; color: var(--ink); background: var(--lapis-wash); border-radius: 14px 14px 14px 4px; padding: .8rem 1rem; }
+  .letter .row-btns { display: flex; flex-wrap: wrap; gap: .6rem; }
+  .btn:disabled { opacity: .6; cursor: wait; }
+
   .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding-block: 2rem 4rem; }
   .pager a { display: grid; gap: .3rem; text-decoration: none; padding: 1rem; border: 1px solid var(--rule); border-radius: 2px; min-width: 0; transition: border-color .2s, background .2s; }
   .pager a:hover { border-color: var(--lapis); background: var(--lapis-wash); }
@@ -305,6 +332,10 @@ const BOOK = { title: "Inson", author: "Jaloliddin Komolov", site: "jaloliddin20
 const PUBLIC_URL = "https://jaloliddin2033.github.io/sher-uchun/";
 /* Ovozli she'rlar: raqam → fayl. Yangi ovoz qo'shilganda shu yerga yoziladi. */
 const AUDIO = { 15: "audio/15.mp3" };
+/* Telegram: muallifga xat. @BotFather bergan token va guruh ID shu yerga yoziladi.
+   Diqqat: token sayt kodida ochiq turadi, shuning uchun shu sayt uchun alohida bot oching.
+   proxy — ixtiyoriy: Cloudflare Worker manzili (unda token yashirin qoladi). */
+const TELEGRAM = { token: "", chatId: "777066179", proxy: "" };
 
 const THEMES = {
   iymon: "Iymon", inson: "Inson", qadar: "Qadar", vaqt: "Vaqt",
@@ -560,7 +591,7 @@ function renderHome() {
     el("p", { text: "She'rlar yozilgan sanasi bo'yicha tartiblangan. Har birini alohida ochish, sekin o'qish, saqlash, rasm qilib ulashish mumkin. Yozuvni yuqoridagi tugma orqali lotin yoki kirillga almashtiring." })
   );
 
-  app.replaceChildren(el("div", { class: "wrap view" }, cover, ilhom, contents, about));
+  app.replaceChildren(el("div", { class: "wrap view" }, cover, ilhom, contents, makeLetter(null), about));
   chipList(); fill();
   applyScript(app);
   document.title = T("Inson");
@@ -664,10 +695,12 @@ function renderPoem(no, opts = {}) {
         el("button", { class: "btn", type: "button", text: "Matnni nusxalash", onclick: () =>
           copy(`${T(p.text)}\n\n— ${T(BOOK.author)}, ${T(p.longDate)}`, T("Matn nusxalandi."), note) }),
         el("button", { class: "btn", type: "button", text: "Havolani nusxalash", onclick: () =>
-          copy(PUBLIC_URL + "#sher-" + no, T("Havola nusxalandi. Endi do'stingizga yuborishingiz mumkin."), note) })
+          copy(PUBLIC_URL + "#sher-" + no, T("Havola nusxalandi. Endi do'stingizga yuborishingiz mumkin."), note) }),
+        el("a", { class: "btn", href: tgShareUrl(p), target: "_blank", rel: "noopener", text: "Telegramda ulashish" })
       ),
       note
     ),
+    makeLetter(no),
     el("nav", { class: "pager", "aria-label": "She'rlar" },
       prev ? el("a", { href: "#sher-" + prev.no }, el("span", { class: "eyebrow", text: "← Oldingi" }), el("span", { class: "t", text: prev.first }))
         : el("span", { class: "ghost" }),
@@ -684,6 +717,101 @@ function renderPoem(no, opts = {}) {
 
 /* ── AUDIO PLAYER ── */
 let currentAudio = null;
+
+/* ── MUALLIFGA YOZISH (Telegram) ── */
+const FEELINGS = ["Yoqdi", "Ta'sir qildi", "O'ylantirdi", "Savolim bor"];
+const tgConfigured = () => !!(TELEGRAM.proxy || (TELEGRAM.token && TELEGRAM.chatId));
+function tgShareUrl(p) {
+  const lines = p.stanzas[0].slice(0, 2).join("\n");
+  return "https://t.me/share/url?url=" + encodeURIComponent(PUBLIC_URL + "#sher-" + p.no) +
+    "&text=" + encodeURIComponent(`${lines}\n— ${BOOK.author}, «${BOOK.title}»`);
+}
+async function sendToTelegram(text) {
+  if (TELEGRAM.proxy) {
+    const r = await fetch(TELEGRAM.proxy, { method: "POST", body: JSON.stringify({ text }) });
+    if (!r.ok) throw new Error("proxy " + r.status);
+    return;
+  }
+  const body = new URLSearchParams({ chat_id: TELEGRAM.chatId, text, disable_web_page_preview: "true" });
+  const r = await fetch(`https://api.telegram.org/bot${TELEGRAM.token}/sendMessage`, { method: "POST", body });
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok || (j && !j.ok)) throw new Error((j && j.description) || ("HTTP " + r.status));
+}
+function makeLetter(poemNo) {
+  const born = Date.now();
+  const picked = new Set();
+  const fName = el("input", { id: "letter-name", type: "text", maxlength: "60", autocomplete: "name", placeholder: "Masalan, Aziz" });
+  const fContact = el("input", { id: "letter-contact", type: "text", maxlength: "60", placeholder: "@username yoki telefon" });
+  const fText = el("textarea", { id: "letter-text", rows: "4", maxlength: "1000", placeholder: "Fikringiz, savolingiz yoki tilagingiz…" });
+  const trap = el("input", { id: "letter-website", name: "website", type: "text", tabindex: "-1", autocomplete: "off", "aria-hidden": "true", class: "trap" });
+  const fPoem = poemNo == null ? el("select", { id: "letter-poem" },
+    el("option", { value: "", text: "Umumiy fikr" }),
+    POEMS.map(p => el("option", { value: String(p.no), text: `${p.no}. ${p.first}` }))) : null;
+  const count = el("span", { text: "0 / 1000" });
+  const err = el("p", { class: "field-err", role: "alert" });
+  const status = el("p", { class: "note", role: "status" });
+  const bubble = el("pre", { class: "bubble", "data-keep": "" });
+  const send = el("button", { class: "btn solid", type: "submit", text: "Telegramga yuborish" });
+  const chipsEl = el("div", { class: "opts", role: "group", "aria-label": "Taassurot" }, FEELINGS.map(f =>
+    el("button", { class: "chip", type: "button", "aria-pressed": "false", text: f, onclick: e => {
+      picked.has(f) ? picked.delete(f) : picked.add(f);
+      e.currentTarget.setAttribute("aria-pressed", String(picked.has(f)));
+      paint();
+    }})));
+  const field = (label, input, extra) => el("label", { class: "field" },
+    el("span", { class: "eyebrow lab" }, el("span", { text: label }), extra || null), input);
+
+  function message() {
+    const no = poemNo != null ? poemNo : (fPoem && fPoem.value ? +fPoem.value : null);
+    const p = no ? POEMS[no - 1] : null;
+    const who = [fName.value.trim(), fContact.value.trim()].filter(Boolean).join(" · ");
+    const out = ["✍️ Inson — yangi xabar", p ? `📖 ${p.no}-she'r: ${p.first}` : "📖 Umumiy fikr"];
+    if (picked.size) out.push("💭 " + FEELINGS.filter(f => picked.has(f)).join(", "));
+    out.push("👤 " + (who || "Ismsiz o'quvchi"), "", fText.value.trim() || "…", "", "🔗 " + PUBLIC_URL + (p ? "#sher-" + p.no : ""));
+    return out.join("\n");
+  }
+  function paint() { bubble.textContent = message(); count.textContent = `${fText.value.length} / 1000`; }
+  function done() {
+    form.reset(); picked.clear();
+    chipsEl.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+    paint();
+    status.textContent = T("Yuborildi. Rahmat! Muallif xabaringizni Telegramda o'qiydi.");
+  }
+
+  const form = el("form", { class: "letter-form", novalidate: "" },
+    fPoem ? field("Qaysi she'r haqida", fPoem) : null,
+    el("div", { class: "field" }, el("span", { class: "eyebrow", text: "Taassurot (ixtiyoriy)" }), chipsEl),
+    field("Xabar", fText, count),
+    el("div", { class: "two" }, field("Ismingiz (ixtiyoriy)", fName), field("Javob uchun (ixtiyoriy)", fContact)),
+    trap,
+    err,
+    el("div", { class: "preview" }, el("span", { class: "eyebrow", text: "Telegramga shunday boradi" }), bubble),
+    el("div", { class: "row-btns" }, send),
+    status);
+  form.addEventListener("input", () => { err.textContent = ""; paint(); });
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    status.textContent = "";
+    if (fText.value.trim().length < 3) { err.textContent = T("Xabar yozing: kamida 3 ta harf."); fText.focus(); return; }
+    if (trap.value || Date.now() - born < 2500) { done(); return; }
+    const last = +loadVal("inson-letter-last", "0");
+    if (Date.now() - last < 60000) { err.textContent = T("Bir daqiqada bitta xabar yuborish mumkin. Biroz kuting."); return; }
+    if (!tgConfigured()) { status.textContent = T("Sinov rejimi: Telegram hali ulanmagan, xabar yuborilmadi."); return; }
+    send.disabled = true; send.textContent = T("Yuborilmoqda…");
+    try { await sendToTelegram(message()); storeVal("inson-letter-last", String(Date.now())); done(); }
+    catch (e2) { status.textContent = T("Yuborib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."); }
+    finally { send.disabled = false; send.textContent = T("Telegramga yuborish"); }
+  });
+  paint();
+
+  return el("section", { class: "letter", id: poemNo == null ? "xat" : null },
+    el("h2", { class: "section-title", text: "Muallifga yozish" }),
+    el("p", { class: "sub", text: poemNo == null
+      ? "Xabaringiz to'g'ridan-to'g'ri muallifning Telegramiga boradi."
+      : "Shu she'r haqidagi fikringiz to'g'ridan-to'g'ri muallifning Telegramiga boradi." }),
+    tgConfigured() ? null : el("p", { class: "demo", text: "Sinov rejimi · Telegram hali ulanmagan" }),
+    form);
+}
 const ICON_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"/></svg>';
 const ICON_PAUSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3.2" height="11" rx="1"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="1"/></svg>';
 function makePlayer(src, note) {
@@ -964,7 +1092,7 @@ function route(opts = {}) {
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
   if (m) { if (windStop) windStop(); renderPoem(+m[1], opts); } else renderHome();
   if (opts.keepScroll) { window.scrollTo(0, y); return; }
-  if (!m && (h === "mundarija" || h === "ilhom")) document.getElementById(h).scrollIntoView();
+  if (!m && (h === "mundarija" || h === "ilhom" || h === "xat")) document.getElementById(h).scrollIntoView();
   else window.scrollTo(0, 0);
 }
 function current() { const m = location.hash.match(/^#sher-(\d+)$/); return m ? +m[1] : 0; }
@@ -972,7 +1100,7 @@ function go(dir) { const n = current(); if (!n) return; const t = n + dir; if (t
 
 window.addEventListener("hashchange", () => route());
 document.addEventListener("keydown", e => {
-  if (e.target.closest("input, textarea")) return;
+  if (e.target.closest("input, textarea, select")) return;
   if (e.key === "ArrowLeft") go(-1);
   else if (e.key === "ArrowRight") go(1);
   else if (e.key === "Escape" && current()) location.hash = "mundarija";
@@ -981,7 +1109,7 @@ document.addEventListener("keydown", e => {
 let tx = 0, ty = 0;
 document.addEventListener("touchstart", e => { tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, { passive: true });
 document.addEventListener("touchend", e => {
-  if (e.target.closest && e.target.closest(".maker")) return;
+  if (e.target.closest && e.target.closest(".maker, .letter")) return;
   const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
   if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
 }, { passive: true });

@@ -464,6 +464,38 @@
     .bar .pos { display: none; }
   }
 </style>
+
+<script>
+/* Tekshiruv: xatolarni yig'adi; ?debug=1 bilan ochilsa, telefon haqida ma'lumot ko'rsatadi */
+(function () {
+  var errs = window.__insonErrors = [];
+  window.addEventListener("error", function (e) { errs.push((e.message || "xato") + (e.lineno ? " (qator " + e.lineno + ")" : "")); });
+  window.addEventListener("unhandledrejection", function (e) { var r = e.reason; errs.push("promise: " + (r && r.message ? r.message : String(r))); });
+  if (!Element.prototype.replaceChildren) Element.prototype.replaceChildren = function () {
+    while (this.firstChild) this.removeChild(this.firstChild);
+    for (var i = 0; i < arguments.length; i++) this.append(arguments[i]);
+  };
+  if (!/[?&]debug/.test(location.search)) return;
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var rows = [
+        ["Brauzer", navigator.userAgent],
+        ["Harakatni kamaytirish (Reduce Motion)", rm ? "YOQILGAN" : "o'chiq"],
+        ["Asosiy skript", window.__insonReady ? "ishga tushdi" : "ISHGA TUSHMADI"],
+        ["ResizeObserver", "ResizeObserver" in window ? "bor" : "YO'Q"],
+        ["Ekran", innerWidth + "x" + innerHeight + " @" + devicePixelRatio],
+        ["Xatolar", errs.length ? errs.join(" | ") : "yo'q"]
+      ];
+      var box = document.createElement("div");
+      box.setAttribute("style", "position:fixed;left:8px;right:8px;top:8px;z-index:9999;background:#fff;color:#111;font:12px/1.45 monospace;padding:10px 12px;border:2px solid #1b6a78;border-radius:8px;max-height:70vh;overflow:auto;white-space:pre-wrap;word-break:break-word");
+      box.textContent = rows.map(function (r) { return r[0] + ": " + r[1]; }).join("\n") + "\n\n(bosing — yopiladi)";
+      box.onclick = function () { box.parentNode.removeChild(box); };
+      document.body.appendChild(box);
+    }, 3500);
+  });
+})();
+</script>
 </head>
 <body>
 <main id="app"></main>
@@ -749,9 +781,10 @@ function renderHome() {
   chipList(); fill();
   applyScript(app);
   document.title = T("Inson");
-  startWind(cover.querySelector(".wind"));
+  try { startWind(cover.querySelector(".wind")); } catch (e) { window.__insonErrors.push("wind: " + e.message); }
   const tw = cover.querySelector(".title-wrap");
-  startScene(tw, tw.querySelector("h1"), () => { location.hash = "sher-" + day.p.no; });
+  startScene(tw, tw.querySelector("h1"), () => { location.hash = "sher-" + day.p.no; })
+    .catch(e => window.__insonErrors.push("scene: " + e.message));
 }
 
 /* ── POEM VIEW ── */
@@ -2264,7 +2297,7 @@ window.addEventListener("scroll", () => {
   clearTimeout(parkScrollT);
   parkScrollT = setTimeout(() => parkEl.classList.remove("hide"), 700);
 }, { passive: true });
-park.start();
+try { park.start(); } catch (e) { window.__insonErrors.push("park: " + e.message); }
 
 /* ── ROUTER ── */
 function route(opts = {}) {
@@ -2302,6 +2335,7 @@ document.addEventListener("touchend", e => {
 }, { passive: true });
 
 route();
+window.__insonReady = true;
 </script>
 </body>
 </html>
